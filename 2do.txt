@@ -1,0 +1,6 @@
+[] click y lista de noticias
+[] buscar término (googletrend)
+
+[ok] expand/fullscren card
+[ok] bigramas
+[ok] filtro categorias sidebar
