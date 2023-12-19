@@ -13,8 +13,9 @@ get_noticias_ultimas_horas <- function(horas = 24, categorias = NULL){
   }
   
   data_noticias <- data_noticias |> 
-    select(body, categoria = category_1) |> 
-    collect()
+    select(title, body, categoria = category_1, url, media, date) |> 
+    collect() |> 
+    mutate(date = as_date(date))
   
   data_noticias
   

@@ -1,28 +1,30 @@
 # packages ----------------------------------------------------------------
-tictoc::tic("packages")
+cli::cli_h1("packages")
+suppressWarnings(library(tidyverse))
 library(shiny)
 library(bslib)
-library(tidyverse)
 library(tidytext)
 library(DBI)
 library(highcharter)
 library(shinyWidgets)
-library(tictoc)
+library(DT)
+loadNamespace("dbplyr")
 
 source("R/helpers.R")
 
-tictoc::toc()
 # parameters --------------------------------------------------------------
+cli::cli_h1("parameters")
 PARS <- list(
   bg = "#fff",
   fg = "#454546",
-  color_chart = "#496973",
+  color_chart = "#6E438B",
   base_font = "Open Sans",
-  heading_font = "Montserrat"
+  heading_font = "Montserrat",
+  palette = c("#C4308F", "#B23FA5", "#6E438B", "#485497", "#53BAAE")
 )
 
 # data --------------------------------------------------------------------
-tictoc::tic("data")
+cli::cli_h1("data")
 stopwords_es   <- readLines("https://raw.githubusercontent.com/Alir3z4/stop-words/master/spanish.txt")
 stopwords_es_2 <- paste(paste0("\\b", stopwords_es, "\\b"), collapse = "|")
 
@@ -35,19 +37,14 @@ pool <- pool::dbPool(
   port = 5432
   )
 
-# data para los graficos de inicio
-data_noticias_once <- get_noticias_ultimas_horas(24)
-# data_noticias <- data_noticias_once
-
 onStop(function() { pool::poolClose(pool)})
 
-tictoc::toc()
 # theme -------------------------------------------------------------------
+cli::cli_h1("theme")
 smart_theme <- bs_theme(
   bg = PARS$bg,
   fg = PARS$fg,
   primary = "#000",
-  "navbar-bg" = PARS$bg,
   base_font = font_google(PARS$base_font),
   heading_font = font_google(PARS$heading_font)
 )
@@ -56,11 +53,59 @@ smart_theme <- bs_theme(
 
 
 # highcharter -------------------------------------------------------------
-langs <- getOption("highcharter.lang")
-langs$loading <- "<i class='fas fa-circle-notch fa-spin fa-4x'></i>"
+cli::cli_h1("highcharter")
+
+hcopts <- getOption("highcharter.chart")
+hcopts$exporting <- list(
+  enabled = TRUE,
+  buttons = list(
+    contextButton = list(
+      menuItems = list(
+        "printChart",
+        # "separator",
+        # "downloadPNG",
+        "downloadJPEG",
+        "downloadPDF",
+        # "downloadSVG",
+        # "separator",
+        # "downloadCSV",
+        "downloadXLS"
+      ),
+      symbolStrokeWidth = 1,
+      symbolFill =  '#C0C0C0',
+      symbolStroke = '#C0C0C0'
+    )
+  )
+)
+
+newlang_opts <- getOption("highcharter.lang")
+newlang_opts$weekdays     <- c("domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado")
+newlang_opts$months       <- c("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
+                               "agosto", "septiembre", "octubre", "noviembre", "diciembre")
+newlang_opts$shortMonths  <- c("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep",
+                               "oct", "nov", "dic")
+newlang_opts$drillUpText  <- "◁ Volver a {series.name}"
+newlang_opts$loading      <- "<i class='fas fa-circle-notch fa-spin fa-4x'></i>"
+# newlang_opts$loading      <- "Cargando información"
+
+newlang_opts$downloadCSV  <- "Descargar CSV"
+newlang_opts$downloadJPEG <- "Descargar JPEG"
+newlang_opts$downloadPDF  <- "Descargar PDF"
+newlang_opts$downloadPNG  <- "Descargar PNG"
+newlang_opts$downloadSVG  <- "Descargar SVG"
+newlang_opts$downloadXLS  <- "Descargar Excel"
+newlang_opts$printChart   <- "Imprimir gráfico"
+newlang_opts$viewFullscreen <- "Ver pantalla completa"
+newlang_opts$resetZoom    <- "Resetear zoom"
+newlang_opts$thousandsSep <- "."
+newlang_opts$decimalPoint <- ","
+
+newlang_opts$contextButtonTitle <- "Menú contextual del gráfico"
+newlang_opts$numericSymbols <- JS("null")
 
 options(
-  highcharter.lang = langs,
+  highcharter.lang = newlang_opts,
+  highcharter.chart = hcopts,
   highcharter.theme = hc_theme_smpl(
     colors = PARS$color_chart,
     chart = list(
@@ -92,7 +137,7 @@ options(
   )
 
 # sidebar and options -----------------------------------------------------
-tictoc::tic("sidebar and options")
+cli::cli_h1("sidebar and options")
 opts_categorias <- tbl(pool, "noticias") |> 
   count(categoria = category_1, sort = TRUE) |> 
   collect() |> 
@@ -129,8 +174,6 @@ smart_sidebar <- sidebar(
 )
 
 
-
-tictoc::toc()
 # partials ----------------------------------------------------------------
 card <- purrr::partial(bslib::card, full_screen = TRUE)
 

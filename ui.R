@@ -3,6 +3,7 @@ page_navbar(
     tags$img(src = "logo.png", width = "100px", height = "auto", class = "me-3"),
     tags$b("SmartDataCiudadano", class = "h6", style = "font-weight:800")
   ),
+  bg = PARS$bg,
   lang = "es",
   theme = smart_theme,
   inverse = FALSE,
