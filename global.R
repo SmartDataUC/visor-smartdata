@@ -26,8 +26,8 @@ PARS <- list(
 
 # data --------------------------------------------------------------------
 cli::cli_h1("data")
-stopwords_es   <- readLines("https://raw.githubusercontent.com/Alir3z4/stop-words/master/spanish.txt")
-stopwords_es_2 <- paste(paste0("\\b", stopwords_es, "\\b"), collapse = "|")
+# stopwords_es   <- readLines("https://raw.githubusercontent.com/Alir3z4/stop-words/master/spanish.txt")
+# stopwords_es_2 <- paste(paste0("\\b", stopwords_es, "\\b"), collapse = "|")
 
 pool <- pool::dbPool(
   drv = RPostgres::Postgres(),
@@ -156,10 +156,14 @@ opts_categorias <- tbl(pool, "noticias") |>
 
 opts_categorias <- set_names(opts_categorias, str_to_title(opts_categorias))
 
-opts_tiempo <-  c("Ultimas 24 horas" = 24,
-                  "Última semana"    = 24 * 7,
-                  "Últimos 30 días"  = 24 * 30,
-                  "Último año"       = 24 * 365)
+opts_tiempo <-  c(
+  # "Ultimas 24 horas" = 24,
+  "Última semana"    = 24 * 7,
+  "Último mes"       = 24 * 30,
+  "Último 3 meses"  = 24 * 30 * 3,
+  "Último 6 meses"  = 24 * 30 * 6
+  # "Último año"       = 24 * 365
+  )
 
 
 # opts_fechas <- tbl(pool, "noticias") |> 
