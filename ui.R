@@ -10,6 +10,7 @@ page_navbar(
   sidebar = smart_sidebar,
   nav_panel(
     tags$head(tags$link(href = "favicon-32x32.png", rel = "icon"),),
+    tags$style(".modal-dialog { top: -90px !important;}"),
     title = tags$span("Inicio", class = "me-3"),
     icon  = icon("dashboard"),
     layout_column_wrap(
