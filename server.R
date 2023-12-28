@@ -8,7 +8,7 @@
 server <- function(input, output, session) {
   
   # inicialización
-  data_noticias <- reactiveVal(get_noticias_ultimas_horas(24))
+  data_noticias <- reactiveVal(get_noticias_ultimas_horas(24 * 7))
   # data_noticias <- get_noticias_ultimas_horas(24 * 7)
   
   output$hc0 <- renderHighchart({
@@ -101,8 +101,10 @@ server <- function(input, output, session) {
     highchartProxy("hc2") |> hcpxy_loading(action = "show")
     highchartProxy("hc3") |> hcpxy_loading(action = "show")
 
+    # data_noticias            <- get_noticias_ultimas_horas(input$tiempo, input$categorias)
+    
     data_noticias(get_noticias_ultimas_horas(input$tiempo, input$categorias))
-    data_noticias            <- get_noticias_ultimas_horas(input$tiempo, input$categorias)
+    data_noticias            <- data_noticias()
     data_noticias_ngram      <- get_noticias_ngram(data_noticias, as.numeric(input$ng))
     data_noticias_categorias <- get_noticias_categorias(data_noticias)
     data_dimension           <- get_data_dimension()
