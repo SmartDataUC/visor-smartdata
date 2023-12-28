@@ -8,6 +8,7 @@ library(DBI)
 library(highcharter)
 library(shinyWidgets)
 library(DT)
+library(bsicons)
 loadNamespace("dbplyr")
 
 source("R/helpers.R")
@@ -38,6 +39,16 @@ pool <- pool::dbPool(
   )
 
 onStop(function() { pool::poolClose(pool)})
+
+vb <- value_box(
+  title = "Última Hora",
+  value = "Delincuencia barrio Meiggs",
+  showcase = bs_icon("graph-up-arrow"),
+  p("23 Noticias últimas 24 horas"),
+  # height = "100px",
+  # max_height = "100px"
+)
+
 
 # theme -------------------------------------------------------------------
 cli::cli_h1("theme")

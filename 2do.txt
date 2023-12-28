@@ -1,3 +1,4 @@
+[] bajada texto, explicativo cada gráfico
 [] descargar imagenes/tabla highcharts
 [] googletrend
 

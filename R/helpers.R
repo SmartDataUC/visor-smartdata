@@ -1,10 +1,20 @@
+# pool <- pool::dbPool(
+#   drv = RPostgres::Postgres(),
+#   # dbname = "smartdata",
+#   user = "postgres",
+#   password = Sys.getenv("PASS"),
+#   host = Sys.getenv("HOST"),
+#   port = 5432
+# )
+# DBI::dbListTables(pool)
+
 get_noticias_ultimas_horas <- function(horas = 24, categorias = NULL){
-  # horas = 24 * 30
+  # horas = 24 * 300
   cli::cli_inform("running get_noticias_ultimas_horas: dias {as.numeric(horas)/24}, categorias: {str_c(categorias, sep = ', ')}")
   
   since <- Sys.Date() - hours(horas)
   
-  data_noticias <- tbl(pool, "noticias") |> 
+  data_noticias <- tbl(pool, "news") |> 
     filter(date >= since)
   
   if(!is.null(categorias)){
@@ -13,7 +23,7 @@ get_noticias_ultimas_horas <- function(horas = 24, categorias = NULL){
   }
   
   data_noticias <- data_noticias |> 
-    select(title, body, categoria = category_1, url, media, date) |> 
+    select(title = clean_title, body = clean_body, categoria = category_1, url, media, date) |> 
     collect() |> 
     mutate(date = as_date(date))
   
@@ -33,16 +43,16 @@ get_noticias_ngram <- function(data_noticias, ng = 3){
   # data_noticias |> 
   #   mutate(body2 = str_remove_all(body, stopwords_es_2))
   
-  for(i in 1:ng){
-    cli::cli_inform("running get_noticias_ngram: removing stopwods in {i} space, nrow {nrow(data_noticias_ngram)}")
-    # data_noticias_ngram |>
-    #   mutate(w = word(ngram, start = 1L))
-    # data_noticias_ngram <- ""
-
-    data_noticias_ngram <- data_noticias_ngram |>
-      filter(!word(ngram, start = i) %in% stopwords_es)
-
-  }
+  # for(i in 1:ng){
+  #   cli::cli_inform("running get_noticias_ngram: removing stopwods in {i} space, nrow {nrow(data_noticias_ngram)}")
+  #   # data_noticias_ngram |>
+  #   #   mutate(w = word(ngram, start = 1L))
+  #   # data_noticias_ngram <- ""
+  # 
+  #   data_noticias_ngram <- data_noticias_ngram |>
+  #     filter(!word(ngram, start = i) %in% stopwords_es)
+  # 
+  # }
   # 
   data_noticias_ngram
   
@@ -56,7 +66,8 @@ get_noticias_categorias <- function(data_noticias){
     count(categoria) |>
     collect() |>
     mutate(categoria = str_to_title(categoria)) |>
-    arrange(desc(n))
+    arrange(desc(n)) |> 
+    filter(!is.na(categoria))
 
   data_noticias_categorias
 
