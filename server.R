@@ -190,20 +190,21 @@ server <- function(input, output, session) {
     
     showModal(
       modalDialog(
-        title = str_glue("Análisis término: {str_to_title(term)}"),
+        title = NULL,
         size = "xl",
         easyClose = TRUE,
         fade = TRUE,
-         # footer = modalButton("Cerrar"),
-        
+        footer = NULL,
+        # footer = modalButton("Cerrar"),
+        tags$h4(str_glue("Análisis término: {str_to_title(term)}")),
+        # tags$hr(),
         layout_column_wrap(
-          width = NULL, height = 300, fill = FALSE,
+          width = NULL, height = 250, fill = FALSE,
           style = htmltools::css(grid_template_columns = "6fr 6fr"),
           card(hc1), 
           card(hc2)
         ),
-        
-        card(doutdt, height = "300px")
+        card(doutdt, height = "350px")
         )
       )
     }) |> 
