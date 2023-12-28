@@ -10,6 +10,7 @@
 
 get_noticias_ultimas_horas <- function(horas = 24, categorias = NULL){
   # horas = 24 * 300
+  # categorias = NULL
   cli::cli_inform("running get_noticias_ultimas_horas: dias {as.numeric(horas)/24}, categorias: {str_c(categorias, sep = ', ')}")
   
   since <- Sys.Date() - hours(horas)
@@ -26,6 +27,8 @@ get_noticias_ultimas_horas <- function(horas = 24, categorias = NULL){
     select(title = clean_title, body = clean_body, categoria = category_1, url, media, date) |> 
     collect() |> 
     mutate(date = as_date(date))
+  
+  cli::cli_inform("running get_noticias_ultimas_horas: {scales::comma(nrow(data_noticias))} filas.")
   
   data_noticias
   
