@@ -14,8 +14,8 @@ page_navbar(
     icon  = icon("dashboard"),
     layout_column_wrap(
       width = 1/2,
-      vb,
-      vb,
+      # vb,
+      # vb,
       card(highchartOutput("hc0")),
       card(highchartOutput("hc2")),
       card(
