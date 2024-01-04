@@ -55,9 +55,11 @@ cli::cli_h1("theme")
 smart_theme <- bs_theme(
   bg = PARS$bg,
   fg = PARS$fg,
-  primary = "#000",
+  # primary = "#000",
+  primary = PARS$color_chart,
   base_font = font_google(PARS$base_font),
-  heading_font = font_google(PARS$heading_font)
+  heading_font = font_google(PARS$heading_font),
+  "popover-max-width" = "400px"
 )
 
 # bslib::bs_theme_preview(smart_theme)
@@ -149,21 +151,29 @@ options(
 
 # sidebar and options -----------------------------------------------------
 cli::cli_h1("sidebar and options")
-opts_categorias <- tbl(pool, "noticias") |> 
+
+# valor para dateRangeInput
+mindate <- tbl(pool, "news") |> 
+  summarise(min(date)) |> 
+  collect() |> 
+  pull() |> 
+  as.Date()
+
+opts_categorias <- tbl(pool, "news") |> 
   count(categoria = category_1, sort = TRUE) |> 
   collect() |> 
   pull(categoria)
 
 opts_categorias <- set_names(opts_categorias, str_to_title(opts_categorias))
 
-opts_tiempo <-  c(
-  # "Ultimas 24 horas" = 24,
-  "Última semana"    = 24 * 7,
-  "Último mes"       = 24 * 30,
-  "Último 3 meses"  = 24 * 30 * 3,
-  "Último 6 meses"  = 24 * 30 * 6
-  # "Último año"       = 24 * 365
-  )
+# opts_tiempo <-  c(
+#   # "Ultimas 24 horas" = 24,
+#   "Última semana"    = 24 * 7,
+#   "Último mes"       = 24 * 30,
+#   "Último 3 meses"  = 24 * 30 * 3,
+#   "Último 6 meses"  = 24 * 30 * 6
+#   # "Último año"       = 24 * 365
+#   )
 
 
 # opts_fechas <- tbl(pool, "noticias") |> 
@@ -184,7 +194,14 @@ smart_sidebar <- sidebar(
     multiple  = TRUE,
     options = list(placeholder = "Todas las categorías")
   ),
-  selectizeInput("tiempo", "Periodo", choices = opts_tiempo)
+  dateRangeInput(
+    "fecha",
+    "Fechas", 
+    min = mindate,
+    separator = " a ", 
+    language = "es"),
+  tags$small(uiOutput("fecha_info"), class = "text-muted")
+  # selectizeInput("tiempo", "Periodo", choices = opts_tiempo),
   # sliderTextInput("fecha", "Fecha", choices = opts_fechas, selected = )
 )
 
