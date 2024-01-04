@@ -84,7 +84,7 @@ server <- function(input, output, session) {
     data_noticias            <- data_noticias()
     data_noticias_ngram      <- get_noticias_ngram(data_noticias, as.numeric(input$ng))
     data_noticias_categorias <- get_noticias_categorias(data_noticias)
-    data_dimension           <- get_data_dimension()
+    # data_dimension           <- get_data_dimension()
     
     cli::cli_alert_info("observe actualización graficos: graficos")
     
