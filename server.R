@@ -1,48 +1,42 @@
 # input <- list(
-#   categorias = NULL,
+#   categorias = c("economia", "salud"),
 #   tiempo     = 24 * 1,
+#   fecha      = c(Sys.Date() - days(6), Sys.Date()),
 #   ngram      = 2,
 #   term       = "años"
 # )
 
 server <- function(input, output, session) {
   
+  # actualizar dateRange para la última semana al partir sesión
+  updateDateRangeInput(
+    session = getDefaultReactiveDomain(),
+    "fecha",
+    end   = Sys.Date(),
+    start = Sys.Date() - days(6),
+    max = Sys.Date()
+    )
+  
+  output$fecha_info <- renderUI(diffdate2(input$fecha[1], input$fecha[2]))
+  
   # inicialización
-  data_noticias <- reactiveVal(get_noticias_ultimas_horas(24 * 7))
-  # data_noticias <- get_noticias_ultimas_horas(24 * 7)
+  data_noticias <- reactiveVal(get_noticias_date_range(Sys.Date() - days(6), Sys.Date()))
+  # data_noticias <- get_noticias_date_range(Sys.Date() - days(6), Sys.Date())
   
-  output$hc0 <- renderHighchart({
-    data_dimension <- get_data_dimension()
-    highchart() |>
-      hc_subtitle(text = "Dimensiones") |> 
-      hc_chart(polar = TRUE) |> 
-      hc_add_series(
-        data = data_dimension$score,
-        id = "data",
-        type = "area",
-        fillOpacity = 0.25,
-        color = PARS$color_chart,
-        showInLegend = FALSE,
-        name = "Dimensiones"
-      ) |> 
-      hc_yAxis(min = 0, max = 100) |> 
-      hc_xAxis(categories = data_dimension$dimension)
-  })
-  
-  output$hc1 <- renderHighchart({
+  output$hc_conceptos <- renderHighchart({
     data_noticias <- isolate(data_noticias())
     data_noticias_ngram <- head(get_noticias_ngram(data_noticias, 1), 10)
     highchart() |>
-      hc_subtitle(text = "Top 10 Trending Palabras") |> 
+      # hc_subtitle(text = "Top 10 Trending Palabras") |>
       hc_add_series(
         data = data_noticias_ngram$n,
         id = "data",
         type = "bar",
         color = PARS$color_chart,
         showInLegend = FALSE,
-        name = "Trending Palabras"
-      ) |> 
-      hc_xAxis(categories = data_noticias_ngram$ngram) |> 
+        name = "Conceptos más frecuentes"
+      ) |>
+      hc_xAxis(categories = data_noticias_ngram$ngram) |>
       hc_plotOptions(
         series = list(
           cursor = "pointer",
@@ -51,100 +45,79 @@ server <- function(input, output, session) {
       )
   })
   
-  output$hc2 <- renderHighchart({
+  output$hc_noticiasc <- renderHighchart({
     data_noticias <- isolate(data_noticias())
     data_noticias_categorias <- get_noticias_categorias(data_noticias)
     highchart() |>
-      hc_subtitle(text = "Treding Temas") |> 
+      # hc_subtitle(text = "Treding Temas") |> 
       hc_add_series(
         data = data_noticias_categorias$n,
         id = "data",
         type = "bar",
         color = PARS$color_chart,
         showInLegend = FALSE,
-        name = "Trending Temas"
+        name = "Noticias por categoría"
       ) |> 
       hc_xAxis(categories = data_noticias_categorias$categoria)
   })
   
-  output$hc3 <- renderHighchart({
-    data_noticias <- isolate(data_noticias())
-    data_noticias_ngram <- head(get_noticias_ngram(data_noticias, 1), 100)
-    highchart() |>
-      hc_colors(PARS$palette) |> 
-      hc_add_series(
-        data = list_parse2(data_noticias_ngram),
-        id = "data",
-        type = "wordcloud",
-        # color = PARS$color_chart,
-        showInLegend = FALSE,
-        name = "Ocurrencias",
-        style = list(fontFamily = "Montserrat")
-        ) |> 
-      hc_plotOptions(
-        series = list(
-          cursor = "pointer",
-          point = list(events = list(click = JS("function(){ Shiny.onInputChange('term', this.name) }")))
-        )
-      )
+  output$hc_hechosnot <- renderHighchart({
+    
   })
   
   # data_noticias <- reactive({
-  #   data_noticias <- get_noticias_ultimas_horas(input$tiempo, input$categorias)
+  #   data_noticias <- get_noticias_date_range(input$fecha[1], input$fecha[2], input$categorias)
   #   }) |>
   #   debounce(2000)
 
   observe({
     
-    highchartProxy("hc0") |> hcpxy_loading(action = "show")
-    highchartProxy("hc1") |> hcpxy_loading(action = "show")
-    highchartProxy("hc2") |> hcpxy_loading(action = "show")
-    highchartProxy("hc3") |> hcpxy_loading(action = "show")
-
-    # data_noticias            <- get_noticias_ultimas_horas(input$tiempo, input$categorias)
+    cli::cli_alert_info("observe actualización graficos")
     
-    data_noticias(get_noticias_ultimas_horas(input$tiempo, input$categorias))
+    highchartProxy("hc_conceptos") |> hcpxy_loading(action = "show")
+    highchartProxy("hc_noticiasc") |> hcpxy_loading(action = "show")
+    
+    cli::cli_alert_info("observe actualización graficos: data")
+    # data_noticias            <- get_noticias_date_range(input$fecha[1], input$fecha[2], input$categorias)
+    data_noticias(get_noticias_date_range(input$fecha[1], input$fecha[2], input$categorias))
+    
     data_noticias            <- data_noticias()
     data_noticias_ngram      <- get_noticias_ngram(data_noticias, as.numeric(input$ng))
     data_noticias_categorias <- get_noticias_categorias(data_noticias)
     data_dimension           <- get_data_dimension()
     
-    highchartProxy("hc0") |> 
-      hcpxy_update_series(id = "data", data =  data_dimension$score)
+    cli::cli_alert_info("observe actualización graficos: graficos")
     
-    highchartProxy("hc1") |> 
+    highchartProxy("hc_conceptos") |> 
       hcpxy_update(xAxis = list(categories = head(data_noticias_ngram$ngram, 10))) |> 
       hcpxy_update_series(id = "data", data =  head(data_noticias_ngram$n, 10))
     
-    highchartProxy("hc2") |> 
+    highchartProxy("hc_noticiasc") |> 
       hcpxy_update(xAxis = list(categories = data_noticias_categorias$categoria)) |> 
       hcpxy_update_series(id = "data", data =  data_noticias_categorias$n)
     
-    highchartProxy("hc3") |> 
-      hcpxy_update_series(id = "data", data =  list_parse2(head(data_noticias_ngram, 100)))
+    highchartProxy("hc_conceptos") |> hcpxy_loading(action = "hide")
+    highchartProxy("hc_noticiasc") |> hcpxy_loading(action = "hide")
     
-    highchartProxy("hc0") |> hcpxy_loading(action = "hide")
-    highchartProxy("hc1") |> hcpxy_loading(action = "hide")
-    highchartProxy("hc2") |> hcpxy_loading(action = "hide")
-    highchartProxy("hc3") |> hcpxy_loading(action = "hide")
+    cli::cli_alert_info("observe actualización graficos: fin")
     
   }) |> 
-    bindEvent(input$tiempo, input$categorias) |> 
+    bindEvent(input$fecha, input$categorias) |> 
     debounce(2000) 
   
   observe({
     
-    highchartProxy("hc1") |> hcpxy_loading(action = "show")
+    highchartProxy("hc_conceptos") |> hcpxy_loading(action = "show")
     
-    # data_noticias            <- get_noticias_ultimas_horas(input$tiempo, input$categorias)
+    # data_noticias            <- get_noticias_date_range(input$fecha[1], input$fecha[2], input$categorias)
     data_noticias            <- data_noticias()
     data_noticias_ngram      <- get_noticias_ngram(data_noticias, as.numeric(input$ng))
     
-    highchartProxy("hc1") |> 
+    highchartProxy("hc_conceptos") |> 
       hcpxy_update(xAxis = list(categories = head(data_noticias_ngram$ngram, 10))) |> 
       hcpxy_update_series(id = "data", data =  head(data_noticias_ngram$n, 10))
     
-    highchartProxy("hc1") |> hcpxy_loading(action = "hide")
+    highchartProxy("hc_conceptos") |> hcpxy_loading(action = "hide")
     
   }) |> 
     bindEvent(input$ng)
@@ -196,15 +169,15 @@ server <- function(input, output, session) {
         fade = TRUE,
         footer = NULL,
         # footer = modalButton("Cerrar"),
-        tags$h4(str_glue("Análisis término: {str_to_title(term)}")),
+        tags$h4(str_glue("Análisis concepto: {str_to_title(term)}")),
         # tags$hr(),
         layout_column_wrap(
           width = NULL, height = 250, fill = FALSE,
           style = htmltools::css(grid_template_columns = "6fr 6fr"),
-          card(hc1), 
-          card(hc2)
+          card(card_header("Tendencia histórica"), hc1), 
+          card(card_header("Distribución categorías"), hc2)
         ),
-        card(doutdt, height = "350px")
+        card(card_header("Noticias donde se encuentra presente el concepto"), doutdt, height = "350px")
         )
       )
     }) |> 
