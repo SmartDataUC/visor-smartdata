@@ -9,6 +9,7 @@ library(highcharter)
 library(shinyWidgets)
 library(DT)
 library(bsicons)
+library(scales)
 loadNamespace("dbplyr")
 
 source("R/helpers.R")
@@ -38,7 +39,9 @@ pool <- pool::dbPool(
   port = 5432
   )
 
-onStop(function() { pool::poolClose(pool)})
+if(!interactive()) {
+  onStop(function() { pool::poolClose(pool)})
+}
 
 vb <- value_box(
   title = "Última Hora",
@@ -144,7 +147,7 @@ options(
       )
     ),
     plotOptions = list(
-      series = list(marker = list(enabled = TRUE))
+      series = list(marker = list(enabled = FALSE))
       )
     )
   )
@@ -154,17 +157,30 @@ cli::cli_h1("sidebar and options")
 
 # valor para dateRangeInput
 mindate <- tbl(pool, "news") |> 
-  summarise(min(date)) |> 
+  summarise(min(date, na.rm = TRUE)) |> 
   collect() |> 
   pull() |> 
   as.Date()
 
 opts_categorias <- tbl(pool, "news") |> 
+  filter(gore == 1) |> 
   count(categoria = category_1, sort = TRUE) |> 
   collect() |> 
   pull(categoria)
 
 opts_categorias <- set_names(opts_categorias, str_to_title(opts_categorias))
+
+opts_comunas <- tbl(pool, "news") |>  
+  count(comunas, sort = TRUE) |>
+  collect() |> 
+  pull(comunas) |> 
+  str_remove_all("\'|\\[|\\]") |> 
+  str_split(",") |> 
+  unlist() |> 
+  unique() |> 
+  str_squish() |> 
+  setdiff("")
+  
 
 # opts_tiempo <-  c(
 #   # "Ultimas 24 horas" = 24,
@@ -187,6 +203,15 @@ opts_categorias <- set_names(opts_categorias, str_to_title(opts_categorias))
 smart_sidebar <- sidebar(
   bg = PARS$bg,
   width = 300,
+  dateRangeInput(
+    "fecha",
+    "Fechas", 
+    min   = mindate,
+    start = Sys.Date() - months(1),
+    end   = Sys.Date(),
+    max   = Sys.Date(),
+    separator = " a ", 
+    language = "es"),
   selectizeInput(
     "categorias",
     "Categorías",
@@ -194,20 +219,22 @@ smart_sidebar <- sidebar(
     multiple  = TRUE,
     options = list(placeholder = "Todas las categorías")
   ),
-  dateRangeInput(
-    "fecha",
-    "Fechas", 
-    min = mindate,
-    separator = " a ", 
-    language = "es"),
-  tags$small(uiOutput("fecha_info"), class = "text-muted")
+  selectizeInput(
+    "comunas",
+    "Comunas",
+    choices = opts_comunas,
+    multiple  = TRUE,
+    options = list(placeholder = "Todas las comunas")
+  ),
+  tags$small(bs_icon("info-circle"), uiOutput("fecha_info", inline = TRUE), class = "text-muted float-right")
   # selectizeInput("tiempo", "Periodo", choices = opts_tiempo),
   # sliderTextInput("fecha", "Fecha", choices = opts_fechas, selected = )
 )
 
 
 # partials ----------------------------------------------------------------
-card <- purrr::partial(bslib::card, full_screen = TRUE)
+card  <- purrr::partial(bslib::card, full_screen = TRUE)
+comma <- purrr::partial(scales::comma, big.mark = ".", decimal.mark = ",")
 
 # test --------------------------------------------------------------------
 DBI::dbListTables(pool)
