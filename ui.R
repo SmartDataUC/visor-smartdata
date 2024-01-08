@@ -1,4 +1,5 @@
 page_navbar(
+  id = "mainnav",
   title = tagList(
     tags$img(src = "logo.png", width = "100px", height = "auto", class = "me-3"),
     tags$b("SmartDataCiudadano", class = "h6", style = "font-weight:800")
@@ -71,13 +72,14 @@ page_navbar(
       )
     ),
   nav_panel(
+    title = tags$span("Comunas", class = "me-3"),
+    icon  = icon("map-location-dot"),
+    leafletOutput("map", width="100%", height="100%")
+  ),
+  nav_panel(
     title = tags$span("Tendencias", class = "me-3"),
     icon  = icon("arrow-trend-up")
     ),
-  nav_panel(
-    title = tags$span("Comunas", class = "me-3"),
-    icon  = icon("map-location-dot")
-  ),
   nav_panel(
     title = tags$span("Acerca de", class = "me-3"),
     icon  = icon("info-circle")
