@@ -42,11 +42,10 @@ page_navbar(
         ),
         highchartOutput("hc_conceptos")
         ),
-      
       card(
         card_header(
           tags$span(
-            "Hechos noticiosos",
+            "Presencia GORE en noticias",
             popover(
               bs_icon("info-circle"),
               title = "Hechos noticiosos",
@@ -54,9 +53,21 @@ page_navbar(
               )
             )
           ),
-        highchartOutput("hc_hechosnot")
-      ),
-      
+        highchartOutput("hc_gorepresc")
+        ),
+      card(
+        card_header(
+          tags$span(
+            "Percepción de noticias",
+            popover(
+              bs_icon("info-circle"),
+              title = "Hechos noticiosos",
+              "Texto sobre Hechos noticiosos"
+            )
+          )
+        ),
+        highchartOutput("hc_prcepcion")
+        ),
       )
     ),
   nav_panel(
