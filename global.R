@@ -10,6 +10,8 @@ library(shinyWidgets)
 library(DT)
 library(bsicons)
 library(scales)
+library(leaflet)
+library(sf)
 loadNamespace("dbplyr")
 
 source("R/helpers.R")
@@ -29,6 +31,8 @@ PARS <- list(
 cli::cli_h1("data")
 # stopwords_es   <- readLines("https://raw.githubusercontent.com/Alir3z4/stop-words/master/spanish.txt")
 # stopwords_es_2 <- paste(paste0("\\b", stopwords_es, "\\b"), collapse = "|")
+
+dcomunas <- sf::read_sf("data/comunas_0001.gpkg")
 
 pool <- pool::dbPool(
   drv = RPostgres::Postgres(),
@@ -207,7 +211,7 @@ smart_sidebar <- sidebar(
     "fecha",
     "Fechas", 
     min   = mindate,
-    start = Sys.Date() - months(1),
+    start = Sys.Date() - months(1) + days(1),
     end   = Sys.Date(),
     max   = Sys.Date(),
     separator = " a ", 
