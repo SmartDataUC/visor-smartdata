@@ -1,44 +1,10 @@
-# pool <- pool::dbPool(
-#   drv = RPostgres::Postgres(),
-#   # dbname = "smartdata",
-#   user = "postgres",
-#   password = Sys.getenv("PASS"),
-#   host = Sys.getenv("HOST"),
-#   port = 5432
-# )
-# DBI::dbListTables(pool)
+get_noticias_date_range <- function(d1, d2, categorias = NULL, comunas = NULL){
 
-get_noticias_ultimas_horas <- function(horas = 24, categorias = NULL){
-  # horas = 24 * 300
-  # categorias = NULL
-  cli::cli_inform("running get_noticias_ultimas_horas: dias {as.numeric(horas)/24}, categorias: {str_c(categorias, sep = ', ')}")
-  
-  since <- Sys.Date() - hours(horas)
-  
-  data_noticias <- tbl(pool, "news") |> 
-    filter(date >= since)
-  
-  if(!is.null(categorias)){
-    data_noticias <- data_noticias |> 
-      filter(category_1 %in% categorias)
-  }
-  
-  data_noticias <- data_noticias |> 
-    select(title = clean_title, body = clean_body, categoria = category_1, url, media, date) |> 
-    collect() |> 
-    mutate(date = as_date(date))
-  
-  cli::cli_inform("running get_noticias_ultimas_horas: {scales::comma(nrow(data_noticias))} filas.")
-  
-  data_noticias
-  
-}
-
-get_noticias_date_range <- function(d1, d2, categorias = NULL){
- 
-  # d1 <- Sys.Date() - days(6)
+  # d1 <- Sys.Date() - days(30)
   # d2 <- Sys.Date()
-  
+  # categorias <- NULL
+  # comunas <- NULL
+
   cli::cli_inform("running get_noticias_date_range: {d1} a {d2}. {diffdate2(d1, d2)}")
   
   data_noticias <- tbl(pool, "news") |> 
@@ -49,15 +15,22 @@ get_noticias_date_range <- function(d1, d2, categorias = NULL){
       filter(category_1 %in% categorias)
   }
   
+  if(!is.null(comunas)){
+    comunas_regex <- str_c(comunas, collapse = "|")
+    data_noticias <- data_noticias |> 
+      filter(str_detect(comunas, comunas_regex))
+  }
+  
   data_noticias <- data_noticias |> 
-    select(title = clean_title, body = clean_body, categoria = category_1, url, media, date) |> 
+    select(title = clean_title, body = clean_body, categoria = category_1, url, media, date, comunas, gore, sentiment) |> 
     collect() |> 
     mutate(date = as_date(date))
   
   cli::cli_inform("running get_noticias_ultimas_horas: {scales::comma(nrow(data_noticias))} filas.")
   
-  data_noticias
+  # glimpse(data_noticias)
   
+  data_noticias
   
 }
 
@@ -149,4 +122,30 @@ diffdate2 <- function(d1, d2) {
 #     score     = round(100 * rbeta(length(dimension), 10, 4), 0)
 #   )
 #   data_dimension
+# }
+# 
+# get_noticias_ultimas_horas <- function(horas = 24, categorias = NULL){
+#   # horas = 24 * 300
+#   # categorias = NULL
+#   cli::cli_inform("running get_noticias_ultimas_horas: dias {as.numeric(horas)/24}, categorias: {str_c(categorias, sep = ', ')}")
+#   
+#   since <- Sys.Date() - hours(horas)
+#   
+#   data_noticias <- tbl(pool, "news") |> 
+#     filter(date >= since)
+#   
+#   if(!is.null(categorias)){
+#     data_noticias <- data_noticias |> 
+#       filter(category_1 %in% categorias)
+#   }
+#   
+#   data_noticias <- data_noticias |> 
+#     select(title = clean_title, body = clean_body, categoria = category_1, url, media, date) |> 
+#     collect() |> 
+#     mutate(date = as_date(date))
+#   
+#   cli::cli_inform("running get_noticias_ultimas_horas: {scales::comma(nrow(data_noticias))} filas.")
+#   
+#   data_noticias
+#   
 # }
