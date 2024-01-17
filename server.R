@@ -247,7 +247,7 @@ server <- function(input, output, session) {
       count(categoria, comunas) |> 
       mutate(comunas = map(comunas, ~ str_squish(unlist(str_split(.x, "\\,"))))) |> 
       unnest(comunas) |>
-      mutate(comunas = str_remove_all(comunas, "\"|\\'|\\[|\\]")) |> 
+      mutate(comunas = str_remove_all(comunas, "\"|\\'|\\[|\\]|\\{|\\}")) |> 
       filter(comunas != "") |> 
       count(comuna = comunas, wt = n, sort = TRUE)
     
@@ -332,15 +332,13 @@ server <- function(input, output, session) {
     
     categ <- input$modal_noticias_cat
     data_noticias <- data_noticias()
-   
-    print(categ)
-    glimpse(data_noticias)
-    
+ 
     showModal(reporte_noticias_categoria(data_noticias, categ))
     
   }) |>
     bindEvent(input$modal_noticias_cat)
   
+  # modal analisis termino
   observe({
     cli::cli_inform("observe input$modal_conceptos_term: {input$modal_conceptos_term}")
 
@@ -352,5 +350,18 @@ server <- function(input, output, session) {
   }) |>
     bindEvent(input$modal_conceptos_term)
 
+  # modal analisis comuna
+  observe({
+    cli::cli_inform("observe input$map_shape_click: {input$map_shape_click}")
+    
+    comunaid <- input$map_shape_click$id
+    data_noticias <- data_noticias()
+    
+    showModal(reporte_comuna(data_noticias, comunaid))
+    
+  }) |>
+    bindEvent(input$map_shape_click)
   
+  
+    
 }

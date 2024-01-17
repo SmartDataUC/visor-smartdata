@@ -178,6 +178,23 @@ hc_pie <- function(d, ...){
 
 }
 
+hc_bar_terms <- function(data_noticias2, ng = 1, ...){
+  
+  get_noticias_ngram(data_noticias2, ng = 1) |> 
+    head(10) |> 
+    hchart(
+      hcaes(ngram, n),
+      type = "bar",
+      color = PARS$color_chart,
+      showInLegend = FALSE,
+      name = "Conceptos más frecuentes",
+      ...
+    )  |> 
+    hc_xAxis(title = "") |>
+    hc_yAxis(title = "")
+  
+} 
+
 # report functions --------------------------------------------------------
 reporte_noticias_categoria <- function(data_noticias, categ){
   
@@ -239,3 +256,43 @@ reporte_concepto_termino <- function(data_noticias, term){
   
 }
 
+reporte_comuna <- function(data_noticias, comunaid = "pudahuel", ng = 1){
+  
+  data_noticias2 <- data_noticias |> 
+    mutate(comunas = map(comunas, ~ str_squish(unlist(str_split(.x, "\\,")))))  |> 
+    unnest(comunas) |> 
+    mutate(comunas = str_remove_all(comunas, "\"|\\'|\\[|\\]|\\{|\\}")) |> 
+    filter(comunas != "") |> 
+    filter(comunaid == snakecase::to_snake_case(stringi::stri_trans_general(comunas, id = "Latin-ASCII")))
+  
+  if(nrow(data_noticias2) == 0){
+    return(modalDialog(tags$h4("Comunas sin noticias")))
+  }
+  
+  comuna <- data_noticias2 |> 
+    pull(comunas) |> 
+    unique()
+  
+  dout <- data_noticias2 |> 
+    mutate(title = str_glue("<a href=\"{url}\" target=\"_blank\">{str_trunc(title, 40)}</a>")) |>
+    select(-body)
+  
+  hc1 <- hc_area_date(dout, name = "Noticias")
+  hc2 <- hc_bar_terms(data_noticias2, ng = 1)
+
+  doutdt <- dout |>
+    select(Título = title, Fecha = date, Medio = media, Categoría = categoria) |>
+    datatable()
+  
+  modalDialog(
+    tags$h4(str_glue("Análisis de noticias comunales: {str_to_title(comuna)}")),
+    layout_column_wrap(
+      width = NULL, height = 250, fill = FALSE,
+      style = htmltools::css(grid_template_columns = "6fr 6fr"),
+      card(card_header("Tendencia histórica")    , hc1),
+      card(card_header("Conceptos más frecuentes"), hc2)
+    ),
+    card(card_header("Noticias en donde se identifica la presencia de la comuna"), doutdt, height = "350px")
+  )
+  
+}
