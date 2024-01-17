@@ -237,8 +237,28 @@ smart_sidebar <- sidebar(
 
 
 # partials ----------------------------------------------------------------
-card  <- purrr::partial(bslib::card, full_screen = TRUE)
-comma <- purrr::partial(scales::comma, big.mark = ".", decimal.mark = ",")
+card        <- purrr::partial(bslib::card, full_screen = TRUE)
+comma       <- purrr::partial(scales::comma, big.mark = ".", decimal.mark = ",")
+modalDialog <- purrr::partial(
+  shiny::modalDialog,
+  title = NULL,
+  size = "xl",
+  easyClose = TRUE,
+  fade = TRUE,
+  footer = NULL
+  )
+
+datatable <- purrr::partial(
+  DT::datatable,
+  escape = FALSE,
+  rownames = FALSE,
+  options = list(
+    bPaginate = FALSE,
+    searching = FALSE,
+    info = FALSE,
+    language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json')
+    )
+  )
 
 # test --------------------------------------------------------------------
 DBI::dbListTables(pool)

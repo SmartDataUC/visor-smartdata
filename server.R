@@ -45,7 +45,13 @@ server <- function(input, output, session) {
         showInLegend = FALSE,
         name = "Noticias por categoría"
       ) |> 
-      hc_xAxis(categories = data_noticias_categorias$categoria)
+      hc_xAxis(categories = data_noticias_categorias$categoria) |> 
+      hc_plotOptions(
+        series = list(
+          cursor = "pointer",
+          point = list(events = list(click = JS("function(){ Shiny.onInputChange('modal_noticias_cat', this.category) }")))
+        )
+      )
     
   })
   
@@ -66,7 +72,7 @@ server <- function(input, output, session) {
       hc_plotOptions(
         series = list(
           cursor = "pointer",
-          point = list(events = list(click = JS("function(){ Shiny.onInputChange('term', this.category) }")))
+          point = list(events = list(click = JS("function(){ Shiny.onInputChange('modal_conceptos_term', this.category) }")))
         )
       )
   })
@@ -158,6 +164,7 @@ server <- function(input, output, session) {
   #   }) |>
   #   debounce(2000)
 
+  # observeEvent para actualizar los 3 primero graficos
   observe({
     
     cli::cli_alert_info("observe actualización graficos")
@@ -319,66 +326,31 @@ server <- function(input, output, session) {
   }) |>
     bindEvent(input$ng)
 
+  # modal analisis noticias por categoria
   observe({
-    cli::cli_inform("observe input$term: {input$term}")
-
-    term <- input$term
+    cli::cli_inform("observe input$modal_noticias_cat: {input$modal_noticias_cat}")
+    
+    categ <- input$modal_noticias_cat
     data_noticias <- data_noticias()
+   
+    print(categ)
+    glimpse(data_noticias)
+    
+    showModal(reporte_noticias_categoria(data_noticias, categ))
+    
+  }) |>
+    bindEvent(input$modal_noticias_cat)
+  
+  observe({
+    cli::cli_inform("observe input$modal_conceptos_term: {input$modal_conceptos_term}")
 
-    dout <- data_noticias |>
-      filter(str_detect(body, regex(term, ignore_case = TRUE))) |>
-      mutate(
-        title = str_glue("<a href=\"{url}\" target=\"_blank\">{str_trunc(title, 40)}</a>")
-      ) |>
-      select(-body)
+    term <- input$modal_conceptos_term
+    data_noticias <- data_noticias()
+    
+    showModal(reporte_concepto_termino(data_noticias, term))
 
-    hc1 <- dout |>
-      count(date) |>
-      hchart("area", hcaes(date, n), fillOpacity = 0.1,  color = PARS$color_chart, name = "Noticias") |>
-      hc_plotOptions(series = list(marker = list(enabled = FALSE))) |>
-      hc_xAxis(title = "") |> hc_yAxis(title = "")
-
-    hc2 <- dout |>
-      count(categoria, sort = TRUE) |>
-      mutate(categoria = fct_inorder(categoria)) |>
-      hchart("pie", hcaes(name = categoria, y = n), name = "Noticias") |>
-      hc_plotOptions(pie = list(dataLabels = list(enabled = TRUE))) |>
-      hc_colors(sort(PARS$palette))
-
-    doutdt <- dout |>
-      select(Título = title, Fecha = date, Medio = media, Categoría = categoria) |>
-      datatable(
-        escape = FALSE,
-        rownames = FALSE,
-        options = list(
-          bPaginate = FALSE,
-          searching = FALSE,
-          info = FALSE,
-          language = list(url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Spanish.json')
-          )
-        )
-
-    showModal(
-      modalDialog(
-        title = NULL,
-        size = "xl",
-        easyClose = TRUE,
-        fade = TRUE,
-        footer = NULL,
-        # footer = modalButton("Cerrar"),
-        tags$h4(str_glue("Análisis concepto: {str_to_title(term)}")),
-        # tags$hr(),
-        layout_column_wrap(
-          width = NULL, height = 250, fill = FALSE,
-          style = htmltools::css(grid_template_columns = "6fr 6fr"),
-          card(card_header("Tendencia histórica"), hc1),
-          card(card_header("Distribución categorías"), hc2)
-        ),
-        card(card_header("Noticias donde se encuentra presente el concepto"), doutdt, height = "350px")
-        )
-      )
-    }) |>
-    bindEvent(input$term)
+  }) |>
+    bindEvent(input$modal_conceptos_term)
 
   
 }

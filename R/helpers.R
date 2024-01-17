@@ -1,9 +1,14 @@
+# data functions ----------------------------------------------------------
 get_noticias_date_range <- function(d1, d2, categorias = NULL, comunas = NULL){
 
   # d1 <- Sys.Date() - days(30)
   # d2 <- Sys.Date()
   # categorias <- NULL
   # comunas <- NULL
+  
+  ds <- c(d1, d2)
+  d1 <- min(ds)
+  d2 <- max(ds)
 
   cli::cli_inform("running get_noticias_date_range: {d1} a {d2}. {diffdate2(d1, d2)}")
   
@@ -150,3 +155,87 @@ diffdate2 <- function(d1, d2) {
 #   data_noticias
 #   
 # }
+
+
+# highcharts functions ----------------------------------------------------
+hc_area_date <- function(d, ...){
+  d |>
+    count(date) |>
+    hchart("area", hcaes(date, n), fillOpacity = 0.1,  color = PARS$color_chart, ...) |>
+    hc_plotOptions(series = list(marker = list(enabled = FALSE))) |>
+    hc_xAxis(title = "") |>
+    hc_yAxis(title = "")
+}
+
+hc_pie <- function(d, ...){
+  d |> 
+    set_names("variable") |> 
+    count(variable, sort = TRUE) |>
+    mutate(variable = fct_inorder(variable)) |>
+    hchart("pie", hcaes(name = variable, y = n), ...) |>
+    hc_plotOptions(pie = list(dataLabels = list(enabled = TRUE))) |>
+    hc_colors(sort(PARS$palette))
+
+}
+
+# report functions --------------------------------------------------------
+reporte_noticias_categoria <- function(data_noticias, categ){
+  
+  dout <- data_noticias  |> 
+    filter(categoria == categ) |> 
+    mutate(title = str_glue("<a href=\"{url}\" target=\"_blank\">{str_trunc(title, 40)}</a>")) |>
+    select(-body)
+  
+  hc1 <- hc_area_date(dout, name = "Noticias")
+  
+  hc2 <- dout |>
+    select(media) |> 
+    hc_pie(name = "Noticias")
+  
+  doutdt <- dout |>
+    select(Título = title, Fecha = date, Medio = media, Categoría = categoria) |>
+    datatable()
+  
+  modalDialog(
+    tags$h4(str_glue("Análisis categoría: {str_to_title(categ)}")),
+    layout_column_wrap(
+      width = NULL, height = 250, fill = FALSE,
+      style = htmltools::css(grid_template_columns = "6fr 6fr"),
+      card(card_header("Tendencia histórica")    , hc1),
+      card(card_header("Distribución medios"), hc2)
+    ),
+    card(card_header("Noticias de la categoría"), doutdt, height = "350px")
+  )
+  
+}
+
+reporte_concepto_termino <- function(data_noticias, term){
+  
+  dout <- data_noticias |>
+    filter(str_detect(body, regex(term, ignore_case = TRUE))) |>
+    mutate(title = str_glue("<a href=\"{url}\" target=\"_blank\">{str_trunc(title, 40)}</a>")) |>
+    select(-body)
+  
+  hc1 <- hc_area_date(dout, name = "Noticias")
+  
+  hc2 <- dout |>
+    select(categoria) |> 
+    hc_pie(name = "Noticias")
+    
+  doutdt <- dout |>
+    select(Título = title, Fecha = date, Medio = media, Categoría = categoria) |>
+    datatable()
+    
+  modalDialog(
+    tags$h4(str_glue("Análisis concepto: {str_to_title(term)}")),
+    layout_column_wrap(
+      width = NULL, height = 250, fill = FALSE,
+      style = htmltools::css(grid_template_columns = "6fr 6fr"),
+      card(card_header("Tendencia histórica")    , hc1),
+      card(card_header("Distribución categorías"), hc2)
+    ),
+    card(card_header("Noticias donde se encuentra presente el concepto"), doutdt, height = "350px")
+  )
+  
+}
+
