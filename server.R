@@ -49,7 +49,7 @@ server <- function(input, output, session) {
       hc_plotOptions(
         series = list(
           cursor = "pointer",
-          point = list(events = list(click = JS("function(){ Shiny.onInputChange('modal_noticias_cat', this.category) }")))
+          point = list(events = list(click = JS("function(){ Shiny.onInputChange('modal_noticias_cat', {'cat': this.category, '.nonce': Math.random()}) }")))
         )
       )
     
@@ -72,7 +72,7 @@ server <- function(input, output, session) {
       hc_plotOptions(
         series = list(
           cursor = "pointer",
-          point = list(events = list(click = JS("function(){ Shiny.onInputChange('modal_conceptos_term', this.category) }")))
+          point = list(events = list(click = JS("function(){ Shiny.onInputChange('modal_conceptos_term', {'term': this.category, '.nonce': Math.random()}) }")))
         )
       )
   })
@@ -110,7 +110,13 @@ server <- function(input, output, session) {
       hc_tooltip(
         valueDecimals = 2,
         pointFormat = "{point.name}: {point.value}%"
+        ) |> 
+      hc_plotOptions(
+        series = list(
+          cursor = "pointer",
+          point = list(events = list(click = JS("function(){ Shiny.onInputChange('modal_presencia_cat', {'cat': this.name, '.nonce': Math.random()}) }")))
         )
+      )
     
   })
   
@@ -145,7 +151,7 @@ server <- function(input, output, session) {
       hc_plotOptions(
         series = list(
           cursor = "pointer",
-          events = list(click = JS("function(event){ Shiny.onInputChange('modal_percepcion', this.name) }"))
+          events = list(click = JS("function(event){ Shiny.onInputChange('modal_percepcion', {'percp': this.name, '.nonce': Math.random()}) }"))
           )
         )
 
@@ -332,11 +338,13 @@ server <- function(input, output, session) {
   }) |>
     bindEvent(input$ng)
 
+
+  # ANALISIS MODALES --------------------------------------------------------
   # modal analisis noticias por categoria
   observe({
     cli::cli_inform("observe input$modal_noticias_cat: {input$modal_noticias_cat}")
     
-    categ <- input$modal_noticias_cat
+    categ <- input$modal_noticias_cat$cat
     data_noticias <- data_noticias()
  
     showModal(reporte_noticias_categoria(data_noticias, categ))
@@ -348,7 +356,7 @@ server <- function(input, output, session) {
   observe({
     cli::cli_inform("observe input$modal_conceptos_term: {input$modal_conceptos_term}")
 
-    term <- input$modal_conceptos_term
+    term <- input$modal_conceptos_term$term
     data_noticias <- data_noticias()
     
     showModal(reporte_concepto_termino(data_noticias, term))
@@ -356,11 +364,23 @@ server <- function(input, output, session) {
   }) |>
     bindEvent(input$modal_conceptos_term)
   
+  observe({
+    cli::cli_inform("observe input$modal_presencia_cat: {input$modal_presencia_cat}")
+    print(input$modal_presencia_cat$cat)
+    categ <- input$modal_presencia_cat$cat
+    data_noticias <- data_noticias()
+    data_noticias <- data_noticias |> filter(gore == 1)
+    
+    showModal(reporte_noticias_categoria(data_noticias, categ))
+    
+  }) |>
+    bindEvent(input$modal_presencia_cat)
+  
   # modal analisis percepcion
   observe({
     cli::cli_inform("observe input$modal_percepcion: {input$modal_percepcion}")
     
-    percp         <- input$modal_percepcion
+    percp         <- input$modal_percepcion$percp
     data_noticias <- data_noticias()
 
     showModal(reporte_percepcion(data_noticias, percp))
@@ -368,10 +388,11 @@ server <- function(input, output, session) {
   }) |>
     bindEvent(input$modal_percepcion)
   
-
   # modal analisis comuna
   observe({
     cli::cli_inform("observe input$map_shape_click: {input$map_shape_click}")
+    
+    print(input$map_shape_click)
     
     comunaid <- input$map_shape_click$id
     data_noticias <- data_noticias()
@@ -380,7 +401,6 @@ server <- function(input, output, session) {
     
   }) |>
     bindEvent(input$map_shape_click)
-  
   
     
 }

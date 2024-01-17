@@ -77,6 +77,10 @@ page_navbar(
     leafletOutput("map", width="100%", height="100%")
   ),
   nav_panel(
+    title = tags$span("Redes Sociales", class = "me-3"),
+    icon  = icon("temperature-half")
+  ),
+  nav_panel(
     title = tags$span("Tendencias", class = "me-3"),
     icon  = icon("arrow-trend-up")
     ),

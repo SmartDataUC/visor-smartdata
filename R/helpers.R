@@ -264,7 +264,7 @@ reporte_percepcion <- function(data_noticias, percp = "Negativo"){
     select(-body)
   
   hc1 <- hc_area_date(dout, name = "Noticias")
-  hc2 <- hc_bar_terms(data_noticias2, ng = 1)
+  hc2 <- hc_bar_terms(data_noticias, ng = 1)
   
   doutdt <- dout |>
     select(Título = title, Fecha = date, Medio = media, Categoría = categoria) |>
