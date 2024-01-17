@@ -256,6 +256,33 @@ reporte_concepto_termino <- function(data_noticias, term){
   
 }
 
+reporte_percepcion <- function(data_noticias, percp = "Negativo"){
+  
+  dout <- data_noticias |>
+    filter(sentiment == stringr::str_to_upper(stringr::str_sub(percp, 0, 3))) |>
+    mutate(title = str_glue("<a href=\"{url}\" target=\"_blank\">{str_trunc(title, 40)}</a>")) |>
+    select(-body)
+  
+  hc1 <- hc_area_date(dout, name = "Noticias")
+  hc2 <- hc_bar_terms(data_noticias2, ng = 1)
+  
+  doutdt <- dout |>
+    select(Título = title, Fecha = date, Medio = media, Categoría = categoria) |>
+    datatable()
+  
+  modalDialog(
+    tags$h4(str_glue("Análisis de noticias {str_to_title(percp)}")),
+    layout_column_wrap(
+      width = NULL, height = 250, fill = FALSE,
+      style = htmltools::css(grid_template_columns = "6fr 6fr"),
+      card(card_header("Tendencia histórica")    , hc1),
+      card(card_header("Conceptos más frecuentes"), hc2)
+    ),
+    card(card_header("Noticias asociadas al sentimiento"), doutdt, height = "350px")
+  )
+  
+}
+
 reporte_comuna <- function(data_noticias, comunaid = "pudahuel", ng = 1){
   
   data_noticias2 <- data_noticias |> 

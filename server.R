@@ -141,7 +141,13 @@ server <- function(input, output, session) {
         type = "area",
         stacking = "normal"
       ) |>
-      hc_tooltip(table = TRUE, sort = TRUE)
+      hc_tooltip(table = TRUE, sort = TRUE) |> 
+      hc_plotOptions(
+        series = list(
+          cursor = "pointer",
+          events = list(click = JS("function(event){ Shiny.onInputChange('modal_percepcion', this.name) }"))
+          )
+        )
 
   })
   
@@ -349,6 +355,19 @@ server <- function(input, output, session) {
 
   }) |>
     bindEvent(input$modal_conceptos_term)
+  
+  # modal analisis percepcion
+  observe({
+    cli::cli_inform("observe input$modal_percepcion: {input$modal_percepcion}")
+    
+    percp         <- input$modal_percepcion
+    data_noticias <- data_noticias()
+
+    showModal(reporte_percepcion(data_noticias, percp))
+    
+  }) |>
+    bindEvent(input$modal_percepcion)
+  
 
   # modal analisis comuna
   observe({
