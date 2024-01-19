@@ -189,7 +189,7 @@ hc_bar_terms <- function(data_noticias2, ng = 1, ...){
       showInLegend = FALSE,
       name = "Conceptos más frecuentes",
       ...
-    )  |> 
+    ) |> 
     hc_xAxis(title = "") |>
     hc_yAxis(title = "")
   
