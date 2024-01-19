@@ -29,7 +29,7 @@ PARS <- list(
 
 # data --------------------------------------------------------------------
 cli::cli_h1("data")
-# stopwords_es   <- readLines("https://raw.githubusercontent.com/Alir3z4/stop-words/master/spanish.txt")
+stopwords_es   <- readLines("https://raw.githubusercontent.com/Alir3z4/stop-words/master/spanish.txt")
 # stopwords_es_2 <- paste(paste0("\\b", stopwords_es, "\\b"), collapse = "|")
 
 dcomunas <- sf::read_sf("data/comunas_0001.gpkg")
@@ -47,15 +47,16 @@ if(!interactive()) {
   onStop(function() { pool::poolClose(pool)})
 }
 
-vb <- value_box(
-  title = "Última Hora",
-  value = "Delincuencia barrio Meiggs",
-  showcase = bs_icon("graph-up-arrow"),
-  p("23 Noticias últimas 24 horas"),
-  # height = "100px",
-  # max_height = "100px"
-)
 
+# data rrss ---------------------------------------------------------------
+# read_csv("data/gore_insta_posts.csv") |> glimpse()
+drrhh <- bind_rows(
+  read_csv("data/gore_insta_posts.csv") |> mutate(categoria = "GORE"),
+  read_csv("data/orrego_insta_posts.csv") |> mutate(categoria = "Gobernador")
+) |> 
+  select(id, categoria, caption, inputUrl, timestamp, likesCount, commentsCount, url, inputUrl,
+         commentsAll) |> 
+  distinct(id, .keep_all = TRUE) 
 
 # theme -------------------------------------------------------------------
 cli::cli_h1("theme")
@@ -205,6 +206,8 @@ opts_comunas <- tbl(pool, "news") |>
 # opts_fechas_sel <- as.character(c(opts_fechas[2] - days(6), opts_fechas[2]))
 
 smart_sidebar <- sidebar(
+  id = "sidebar",
+  open = "open",
   bg = PARS$bg,
   width = 300,
   dateRangeInput(
