@@ -26,6 +26,8 @@ server <- function(input, output, session) {
     )
   })
   
+
+  # Noticias ----------------------------------------------------------------
   # inicialización
   data_noticias <- reactiveVal(get_noticias_date_range(Sys.Date() - months(1) + days(1), Sys.Date()))
   # data_noticias <- get_noticias_date_range(Sys.Date() - months(1) + days(1), Sys.Date())
@@ -403,4 +405,71 @@ server <- function(input, output, session) {
     bindEvent(input$map_shape_click)
   
     
+  # RRSS --------------------------------------------------------------------
+  # si se hace click en seccion se cierra sidebar
+  observe({
+    x <- str_to_lower(input$mainnav)
+    if(str_detect(x, "redes sociales")){
+      sidebar_toggle(id = "sidebar", open = FALSE)
+    } else {
+      sidebar_toggle(id = "sidebar", open = TRUE)
+    }
+  }) |>
+    bindEvent(input$mainnav)
+  
+  output$hc_rrss_fecha <- renderHighchart({
+  
+    drrhh |> 
+      mutate(
+        day = lubridate::floor_date(timestamp, "month"),
+        day = as.Date(day)
+        ) |> 
+      count(day, categoria) |> 
+      hchart(type = "area", hcaes(day, n, group = categoria), stacking = "normal") |> 
+      hc_chart(zoomType = "x") |> 
+      hc_colors(PARS$palette[c(1, 5)])|> 
+      hc_xAxis(title = "") |>
+      hc_yAxis(title = "")
+    
+  })
+  
+  # output$hc_rrss_terminos <- renderHighchart({
+  # 
+  #   drrhh |> 
+  #     filter(!is.na(commentsAll)) |>
+  #     select(commentsAll) |> 
+  #     unnest_tokens(ngram, commentsAll, token = "ngrams", n = 1) |> 
+  #     count(ngram, sort = TRUE) |> 
+  #     filter(!ngram %in% stopwords_es) |>
+  #     filter(!str_detect(ngram, "^[0-9]+$")) |> 
+  #     filter(!str_detect(ngram, "_nc_")) |> 
+  #     View()
+  #   
+  #   
+  # })
+  
+  output$dt_rrss_mas_activos <- DT::renderDataTable({
+    
+    drrhh |>
+      arrange(desc(likesCount + commentsCount)) |> 
+      arrange(desc(commentsCount)) |> 
+      mutate(
+        caption = str_squish(caption),
+        caption = str_glue("<a href=\"{url}\" target=\"_blank\">{str_trunc(caption, 40)}</a>"),
+        date = lubridate::floor_date(timestamp, "day"),
+        date = as.Date(date)
+        ) |>
+      filter(!is.na(caption)) |> 
+      head(100) |> 
+      select(Contenido = caption, Fecha = date, "\u2764" = likesCount, "&#128488;" = commentsCount) |> 
+      mutate(
+        Hace = map_chr(Fecha, diffdate2, d2 = Sys.Date()),
+        Hace = str_remove(Hace, "\\."),
+        .after = Fecha
+        ) |> 
+      datatable() |> 
+      formatCurrency(c(4, 5),currency = "", interval = 3, mark = ".", digits  = 0)
+    
+  })
+  
 }
