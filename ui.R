@@ -9,6 +9,7 @@ page_navbar(
   theme = smart_theme,
   inverse = FALSE,
   sidebar = smart_sidebar,
+  # inicio ------------------------------------------------------------------
   nav_panel(
     tags$head(tags$link(href = "favicon-32x32.png", rel = "icon"),),
     tags$style(".modal-dialog { top: -90px !important;}"),
@@ -76,16 +77,40 @@ page_navbar(
     icon  = icon("map-location-dot"),
     leafletOutput("map", width="100%", height="100%")
   ),
+
+  # rrss --------------------------------------------------------------------
   nav_panel(
     title = tags$span("Redes Sociales", class = "me-3"),
-    icon  = icon("temperature-half")
+    icon  = icon("temperature-half"),
+    layout_column_wrap(
+      width = 1/2,
+      card(
+        card_header("Posts por fecha"),
+        highchartOutput("hc_rrss_fecha")
+      ),
+      card(
+        card_header("Chart 2"),
+        highchartOutput("hc_rrss_2")
+      ),
+      card(
+        card_header("Chart 3"),
+        highchartOutput("hc_rrss_3")
+      ),
+      card(
+        card_header("Top 100 Contenido con mayor actividad"),
+        DT::dataTableOutput("dt_rrss_mas_activos")
+      ),
+    )
   ),
+  # tendencias --------------------------------------------------------------
   nav_panel(
     title = tags$span("Tendencias", class = "me-3"),
     icon  = icon("arrow-trend-up")
     ),
+  # acerca de ---------------------------------------------------------------
   nav_panel(
     title = tags$span("Acerca de", class = "me-3"),
     icon  = icon("info-circle")
     )
-  )
+  # fin ---------------------------------------------------------------------
+)
