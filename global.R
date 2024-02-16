@@ -12,6 +12,7 @@ library(bsicons)
 library(scales)
 library(leaflet)
 library(sf)
+library(snakecase)
 loadNamespace("dbplyr")
 
 source("R/helpers.R")
