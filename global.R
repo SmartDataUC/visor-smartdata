@@ -187,7 +187,6 @@ opts_comunas <- tbl(pool, "news") |>
   str_squish() |> 
   setdiff("")
   
-
 # opts_tiempo <-  c(
 #   # "Ultimas 24 horas" = 24,
 #   "Última semana"    = 24 * 7,
