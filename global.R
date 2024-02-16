@@ -180,7 +180,7 @@ opts_comunas <- tbl(pool, "news") |>
   count(comunas, sort = TRUE) |>
   collect() |> 
   pull(comunas) |> 
-  str_remove_all("\'|\\[|\\]") |> 
+  str_remove_all("\'|\"|\\[|\\]|\\{|\\}") |> 
   str_split(",") |> 
   unlist() |> 
   unique() |> 
