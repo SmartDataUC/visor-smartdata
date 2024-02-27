@@ -7,12 +7,17 @@ library(tidytext)
 library(DBI)
 library(highcharter)
 library(shinyWidgets)
+library(shinyjs)
+library(shinycssloaders)
 library(DT)
 library(bsicons)
 library(scales)
 library(leaflet)
 library(sf)
 library(snakecase)
+library(dbplyr)
+library(pool)
+library(RPostgres)
 loadNamespace("dbplyr")
 
 source("R/helpers.R")
@@ -224,7 +229,7 @@ smart_sidebar <- sidebar(
     "Categorías",
     choices = opts_categorias,
     multiple  = TRUE,
-    options = list(placeholder = "Todas las categorías")
+    options = list(placeholder = "Todas las categorías", maxItems = 99999)
   ),
   selectizeInput(
     "comunas",

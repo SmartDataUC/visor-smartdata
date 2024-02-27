@@ -13,6 +13,7 @@ ui <- page_navbar(
   # inicio ------------------------------------------------------------------
   nav_panel(
     shinyjs::useShinyjs(),  # Set up shinyjs
+    
     title = tags$span("Tendencias", class = "me-3"),
     icon  = icon("arrow-trend-up"),
     
@@ -27,9 +28,9 @@ ui <- page_navbar(
       width = "100%"
     ),
     
-    uiOutput("value"),
+    uiOutput("tags_ui"),
     
-    shinyjs::disabled(shiny::actionButton("term_go", "Analizar")),
+    shinyjs::disabled(shiny::actionButton("term_go", "Analizar", icon = icon("search"))),
     
     highchartOutput("trend_hc1")
     
@@ -69,7 +70,7 @@ server <- function(input, output, session) {
     
     plc_hld <- case_when(
       nt <= 0 ~ "Ingresa un término para analizar",
-      nt <= 4 ~ "Agrega otro ítem para comparar",
+      nt <= 4 ~ "Agrega otro término para comparar",
       nt >=  5 ~ "No se pueden comparar más de 5 términos"
     ) 
     updateSearchInput(session, "tags", placeholder = plc_hld)
@@ -89,7 +90,7 @@ server <- function(input, output, session) {
   }) |> 
     bindEvent(trend_terms())
   
-  output$value <- renderUI({
+  output$tags_ui <- renderUI({
     trend_terms()         
     t <- trend_terms()
     c <- viridis::viridis(length(t))
@@ -121,9 +122,13 @@ server <- function(input, output, session) {
   
   output$trend_hc1 <- renderHighchart({
     
+    shinyjs::disable(id = "term_go")
+    
     input$term_go
     terms <- isolate(trend_terms())
     if(length(terms) == 0) return(highchart())
+    
+    
     
     tibble(term = terms, color =  viridis::viridis(length(terms))) |> 
       mutate(value = nchar(term)) |> 

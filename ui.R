@@ -11,6 +11,7 @@ page_navbar(
   sidebar = smart_sidebar,
   # inicio ------------------------------------------------------------------
   nav_panel(
+    shinyjs::useShinyjs(),  # Set up shinyjs
     tags$head(tags$link(href = "favicon-32x32.png", rel = "icon"),),
     tags$style(".modal-dialog { top: -90px !important;}"),
     title = tags$span("Inicio", class = "me-3"),
@@ -72,6 +73,7 @@ page_navbar(
         ),
       )
     ),
+  # comunas -----------------------------------------------------------------
   nav_panel(
     title = tags$span("Comunas", class = "me-3"),
     icon  = icon("map-location-dot"),
@@ -105,7 +107,33 @@ page_navbar(
   # tendencias --------------------------------------------------------------
   nav_panel(
     title = tags$span("Tendencias", class = "me-3"),
-    icon  = icon("arrow-trend-up")
+    icon  = icon("arrow-trend-up"),
+    shinyWidgets::searchInput(
+      inputId = "tags",
+      # label = "Click search icon to update or hit 'Enter'",
+      label = NULL,
+      placeholder = "Ingresa un término para analizar",
+      btnSearch = icon("add"), 
+      btnReset = icon("remove"),
+      # btnReset = NULL, 
+      width = "100%"
+    ),
+    uiOutput("tags_ui"),
+    shinyjs::disabled(shiny::actionButton("term_go", "Analizar", icon = icon("search"))),
+    
+    layout_column_wrap(
+      fillable = TRUE,
+      width = 1/2,
+      
+      card(
+        card_header("Tendencia temporal"),
+        min_heigth = 300,
+        withSpinner(highchartOutput("trend_hc1"))
+        )
+      )
+    
+    
+    
     ),
   # acerca de ---------------------------------------------------------------
   nav_panel(
