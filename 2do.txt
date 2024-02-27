@@ -1,9 +1,0 @@
-[] bajada texto, explicativo cada gráfico
-[] descargar imagenes/tabla highcharts
-[] googletrend
-
-[ok] Colores Jesu
-[ok] click y lista de noticias
-[ok] expand/fullscren card
-[ok] bigramas
-[ok] filtro categorias sidebar
