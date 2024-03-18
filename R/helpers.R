@@ -32,7 +32,12 @@ get_noticias_date_range <- function(d1, d2, categorias = NULL, comunas = NULL){
     collect() |> 
     mutate(date = as_date(date))
   
-  cli::cli_inform("running get_noticias_ultimas_horas: {scales::comma(nrow(data_noticias))} filas.")
+  cli::cli_inform("running get_noticias_date_range: str_clean a body.")
+  
+  data_noticias <- data_noticias |> 
+    mutate(body = str_clean(body)) 
+  
+  cli::cli_inform("running get_noticias_date_range: {scales::comma(nrow(data_noticias))} filas.")
   
   # glimpse(data_noticias)
   
@@ -120,6 +125,17 @@ diffdate2 <- function(d1, d2) {
   t <- str_flatten(na.omit(c(a, m, d)), collapse = ", ", last = " y ")
   t <- str_glue("{t}.")
   t
+}
+
+str_clean <- function(x = c("Cath{í   B.arriga ", "otroa cosa")){
+  
+  x |> 
+    str_to_lower() |> 
+    stringi::stri_trans_general(id = "Latin-ASCII") |> 
+    str_extract_all("[a-z]| ") |> 
+    map_chr(str_c, collapse = "") |> 
+    str_squish()
+    
 }
 
 # get_data_dimension <- function(){

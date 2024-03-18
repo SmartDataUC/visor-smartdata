@@ -481,8 +481,12 @@ server <- function(input, output, session) {
   observe({
     # si es un valor distinto de nulo, agregamos a la lista y borramos contenido
     if(nchar(input$tags) > 0 & input$tags != ""){
-      trend_terms(unique(c(trend_terms(), input$tags)))
+      
+      t <- trend_terms()
+      tnew <- c(t, input$tags)
+      trend_terms(str_to_title(tnew[!duplicated(str_clean(tnew))]))
       updateSearchInput(session, "tags", value = "")
+      
     }
   }) |> 
     bindEvent(input$tags)
@@ -550,21 +554,78 @@ server <- function(input, output, session) {
     
   })
   
+  data_trend <- reactive({
+    
+    data_noticias <- data_noticias()
+    terms         <- trend_terms()
+    
+    # terms <- c("cathy barriga", "arresto domiciliario", "estafa", "asdxx")
+    
+    withProgress(
+      message = "Procesando datos",
+      value = 0,
+      {
+        data_trend <- map_df(1:length(terms), function(i = 2){
+          
+          t <- terms[i]
+          
+          if(!interactive()) incProgress(1/length(terms), message = str_glue("Procesando término '{t}'") )
+          
+          dt <- data_noticias |> 
+            filter(str_detect(body, str_clean(t))) |> 
+            mutate(term = t, .before = 1)
+          
+          # esto es para generar datos para todas las categorias
+          if(nrow(dt) == 0) return(tibble(term = t))
+        
+          dt
+          
+        })
+      })
+    
+    data_trend <- data_trend |> 
+      mutate(term = fct_inorder(term))
+  
+    data_trend
+      
+  }) |> 
+    bindEvent(input$term_go)
+  
   output$trend_hc1 <- renderHighchart({
     
     shinyjs::disable(id = "term_go")
     
-    input$term_go
-    terms <- isolate(trend_terms())
-    if(length(terms) == 0) return(highchart())
+    data_trend <- data_trend()
+    terms      <- isolate(trend_terms())
     
-
-    tibble(term = terms, color =  viridis::viridis(length(terms))) |> 
-      mutate(value = nchar(term)) |> 
-      hchart("column", hcaes(x = term, y = value, color = color))
+    c <- viridis::viridis(length(unique(data_trend$term)))
+    
+    data_trend |> 
+      count(term, date) |> 
+      complete(term, date, fill = list(n = 0)) |> 
+      hchart(hcaes(date, n, group = term), type = "line") |> 
+      hc_tooltip(table = TRUE, sort = TRUE) |> 
+      hc_colors(c)
     
   })
   
+  output$trend_hc2 <- renderHighchart({
+    
+    data_trend <- data_trend()
+    terms      <- isolate(trend_terms())
+    
+    c <- viridis::viridis(length(unique(data_trend$term)))
+    
+    data_trend |> 
+      # eliminamos registros ficticioes
+      filter(!is.na(date)) |> 
+      group_by(term, .drop = FALSE) |> 
+      count() |>  
+      ungroup() |> 
+      hchart(hcaes(term, n), type = "column", colorByPoint = TRUE) |> 
+      hc_colors(c)
+    
+  })
   
   
 }

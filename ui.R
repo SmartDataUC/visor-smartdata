@@ -12,6 +12,7 @@ page_navbar(
   # inicio ------------------------------------------------------------------
   nav_panel(
     shinyjs::useShinyjs(),  # Set up shinyjs
+    autoWaiter(color = alpha(PARS$color_chart, alpha = 0.2), fadeout = TRUE),
     tags$head(tags$link(href = "favicon-32x32.png", rel = "icon"),),
     tags$style(".modal-dialog { top: -90px !important;}"),
     title = tags$span("Inicio", class = "me-3"),
@@ -127,13 +128,16 @@ page_navbar(
       
       card(
         card_header("Tendencia temporal"),
-        min_heigth = 300,
-        withSpinner(highchartOutput("trend_hc1"))
-        )
+           # min_heigth = 300,
+           # withSpinner(
+           highchartOutput("trend_hc1")
+           # )
+        ),
+      card(
+        card_header("Tendencia temporal"),
+        highchartOutput("trend_hc2")
+          )
       )
-    
-    
-    
     ),
   # acerca de ---------------------------------------------------------------
   nav_panel(
