@@ -12,11 +12,10 @@ page_navbar(
   # inicio ------------------------------------------------------------------
   nav_panel(
     shinyjs::useShinyjs(),  # Set up shinyjs
-    autoWaiter(color = alpha(PARS$color_chart, alpha = 0.2), fadeout = TRUE),
     tags$head(tags$link(href = "favicon-32x32.png", rel = "icon"),),
     tags$style(".modal-dialog { top: -90px !important;}"),
-    title = tags$span("Inicio", class = "me-3"),
-    icon  = icon("dashboard"),
+    title = tags$span("Medios de comunicación", class = "me-3"),
+    icon  = icon("newspaper"),
     layout_column_wrap(
       width = 1/2,
       card(
