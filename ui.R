@@ -51,8 +51,8 @@ page_navbar(
             "Presencia GORE en noticias",
             popover(
               bs_icon("info-circle"),
-              title = "Hechos noticiosos",
-              "Texto sobre Hechos noticiosos"
+              title = "Presencia GORE en noticias",
+              "Este gráfico de burbujas agrupadas representa la distribución de noticias publicadas en los medios que hagan referencia al Gobierno Regional de Santiago o al Gobernador Regional. Las noticias son presentadas por categoría de noticia. Cada burbuja representa una categoría, siendo su tamaño proporcional respecto a su presencia en el grupo de noticias, siendo la burbuja más grande el tema en donde más se hace referencia al Gobierno Regional de Santiago o al Gobernado Regional para el periodo analizado."
               )
             )
           ),
