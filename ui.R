@@ -9,6 +9,21 @@ page_navbar(
   theme = smart_theme,
   inverse = FALSE,
   sidebar = smart_sidebar,
+  # inicio sesión -----------------------------------------------------------
+  nav_panel(
+    title = "Iniciar Sesión",
+    icon  = icon("right-to-bracket"),
+    value = "auth",
+    shinyauthr::loginUI(
+      id = "login",
+      # title = "Inicio de Sesión",
+      title = NULL,
+      user_title = "Usuario",
+      pass_title = "Contraseña",
+      login_title = "Iniciar Sesión",
+      error_message = "Usuario o contraseña invalidos"
+    ),
+  ),
   # inicio ------------------------------------------------------------------
   nav_panel(
     shinyjs::useShinyjs(),  # Set up shinyjs
@@ -16,6 +31,8 @@ page_navbar(
     tags$style(".modal-dialog { top: -90px !important;}"),
     title = tags$span("Medios de comunicación", class = "me-3"),
     icon  = icon("newspaper"),
+    value = "medios",
+    style = "display: none;",
     layout_column_wrap(
       width = 1/2,
       card(
@@ -77,27 +94,30 @@ page_navbar(
   nav_panel(
     title = tags$span("Comunas", class = "me-3"),
     icon  = icon("map-location-dot"),
+    value = "comunas",
+    style = "display: none;",
     leafletOutput("map", width="100%", height="100%")
   ),
-
   # rrss --------------------------------------------------------------------
   nav_panel(
     title = tags$span("Redes Sociales", class = "me-3"),
     icon  = icon("temperature-half"),
+    value = "rrss",
+    style = "display: none;",
     layout_column_wrap(
       width = 1/2,
       card(
         card_header("Posts por fecha"),
         highchartOutput("hc_rrss_fecha")
       ),
-      card(
-        card_header("Chart 2"),
-        highchartOutput("hc_rrss_2")
-      ),
-      card(
-        card_header("Chart 3"),
-        highchartOutput("hc_rrss_3")
-      ),
+      # card(
+      #   card_header("Chart 2"),
+      #   highchartOutput("hc_rrss_2")
+      # ),
+      # card(
+      #   card_header("Chart 3"),
+      #   highchartOutput("hc_rrss_3")
+      # ),
       card(
         card_header("Top 100 Contenido con mayor actividad"),
         DT::dataTableOutput("dt_rrss_mas_activos")
@@ -108,6 +128,8 @@ page_navbar(
   nav_panel(
     title = tags$span("Tendencias", class = "me-3"),
     icon  = icon("arrow-trend-up"),
+    value = "tendencias",
+    style = "display: none;",
     shinyWidgets::searchInput(
       inputId = "tags",
       # label = "Click search icon to update or hit 'Enter'",
@@ -141,7 +163,18 @@ page_navbar(
   # acerca de ---------------------------------------------------------------
   nav_panel(
     title = tags$span("Acerca de", class = "me-3"),
-    icon  = icon("info-circle")
+    icon  = icon("info-circle"),
+    style = "display: none;",
+    value = "acercade"
+    ),
+  nav_spacer(),
+  nav_item(
+    shinyauthr::logoutUI(
+      id = "logout", 
+      label = "Cerrar Sesión",
+      class = "btn-info",
+      icon = icon("rectangle-xmark")
     )
+  )
   # fin ---------------------------------------------------------------------
 )

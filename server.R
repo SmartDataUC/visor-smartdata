@@ -8,16 +8,74 @@
 
 server <- function(input, output, session) {
   
+  # auth --------------------------------------------------------------------
+  credentials <- shinyauthr::loginServer(
+    id = "login",
+    data = readxl::read_excel("data/users.xlsx"),
+    user_col = user,
+    pwd_col = password,
+    log_out = reactive(logout_init())
+  )
+  
+  # call the logout module with reactive trigger to hide/show
+  logout_init <- shinyauthr::logoutServer(
+    id = "logout",
+    active = reactive(credentials()$user_auth)
+  )
+  
+  observe({
+    
+    if(credentials()$user_auth){
+      cli::cli_alert_success("user logueado")
+      # sidebar_toggle("mainsidebar", open = TRUE)
+      nav_hide("mainnav", "auth")
+      
+      nav_show("mainnav", "medios")
+      nav_show("mainnav", "comunas")
+      nav_show("mainnav", "rrss")
+      nav_show("mainnav", "tendencias")
+      nav_show("mainnav", "acercade")
+  
+      nav_select("mainnav", "medios")
+      
+      sidebar_toggle("mainsidebar", open = TRUE)
+    } else {
+      cli::cli_alert_danger("user no logueado")
+      # sidebar_toggle("mainsidebar", open = FALSE)
+      nav_show("mainnav", "auth")
+      
+      nav_hide("mainnav", "medios")
+      nav_hide("mainnav", "comunas")
+      nav_hide("mainnav", "rrss")
+      nav_hide("mainnav", "tendencias")
+      nav_hide("mainnav", "acercade")
+      
+      nav_select("mainnav", "auth")
+    }
+    
+    print(credentials())
+    
+  }) |>
+    bindEvent(credentials())
+  
+  observe({
+    cli::cli_alert_danger("user logout!")
+    sidebar_toggle("mainsidebar", open = FALSE)
+  }) |>
+    bindEvent(logout_init())
+  
+  
   # Inicio ------------------------------------------------------------------
   # actualizar dateRange para la última semana al partir sesión
   updateDateRangeInput(
     session = getDefaultReactiveDomain(),
     "fecha",
-    start = Sys.Date() - months(1) + days(1),
+    # start = Sys.Date() - months(1) + days(1),
+    start = Sys.Date() - days(6),
     end   = Sys.Date(),
     max   = Sys.Date()
     )
-  
+
   output$fecha_info <- renderUI({
     data_noticias <- data_noticias()
     str_glue(
@@ -27,10 +85,10 @@ server <- function(input, output, session) {
     )
   })
   
-
   # Noticias ----------------------------------------------------------------
   # inicialización
-  data_noticias <- reactiveVal(get_noticias_date_range(Sys.Date() - months(1) + days(1), Sys.Date()))
+  # data_noticias <- reactiveVal(get_noticias_date_range(Sys.Date() - months(1) + days(1), Sys.Date()))
+  data_noticias <- reactiveVal(get_noticias_date_range(Sys.Date() - days(6), Sys.Date()))
   # data_noticias <- get_noticias_date_range(Sys.Date() - months(1) + days(1), Sys.Date())
   
   output$hc_noticiasc <- renderHighchart({

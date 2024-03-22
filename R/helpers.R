@@ -1,8 +1,8 @@
 # data functions ----------------------------------------------------------
 get_noticias_date_range <- function(d1, d2, categorias = NULL, comunas = NULL){
 
-  # d1 <- Sys.Date() - days(30)
-  # d2 <- Sys.Date()
+  # d1 <- Sys.Date() - days(1)
+  # d2 <- Sys.Date() - days(1)
   # categorias <- NULL
   # comunas <- NULL
   

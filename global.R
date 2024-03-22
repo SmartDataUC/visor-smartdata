@@ -9,7 +9,6 @@ library(highcharter)
 library(shinyWidgets)
 library(shinyjs)
 library(shinycssloaders)
-library(waiter)
 library(DT)
 library(bsicons)
 library(scales)
@@ -213,14 +212,15 @@ opts_comunas <- tbl(pool, "news") |>
 
 smart_sidebar <- sidebar(
   id = "sidebar",
-  open = "open",
+  open = FALSE,
   bg = PARS$bg,
   width = 300,
   dateRangeInput(
     "fecha",
     "Fechas", 
     min   = mindate,
-    start = Sys.Date() - months(1) + days(1),
+    # start = Sys.Date() - months(1) + days(1),
+    start = Sys.Date() - days(6),
     end   = Sys.Date(),
     max   = Sys.Date(),
     separator = " a ", 
