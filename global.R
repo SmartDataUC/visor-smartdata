@@ -18,6 +18,7 @@ library(snakecase)
 library(dbplyr)
 library(pool)
 library(RPostgres)
+library(markdown)
 loadNamespace("dbplyr")
 
 source("R/helpers.R")

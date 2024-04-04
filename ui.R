@@ -1,13 +1,17 @@
 page_navbar(
   id = "mainnav",
   title = tagList(
-    tags$img(src = "logo.png", width = "100px", height = "auto", class = "me-3"),
-    tags$b("SmartDataCiudadano", class = "h6", style = "font-weight:800")
+    tags$img(src = "gs.png",        width = "100px", height = "auto", class = "me-3"),
+    tags$img(src = "cegir.png", width = "150x",  height = "auto", class = "me-3"),
+    tags$img(src = "core.png",  width = "75px",  height = "auto", class = "me-3"),
+    tags$img(src = "puc.png",   width = "35px",  height = "auto", class = "me-3"),
+    # tags$img(src = "logo.png", width = "100px", height = "auto", class = "me-3"),
+    # tags$b("SmartDataCiudadano", class = "h6", style = "font-weight:800")
   ),
-  bg = PARS$bg,
+  # bg = PARS$bg,
   lang = "es",
   theme = smart_theme,
-  inverse = FALSE,
+  inverse = TRUE,
   sidebar = smart_sidebar,
   # inicio sesión -----------------------------------------------------------
   nav_panel(
@@ -27,7 +31,9 @@ page_navbar(
   # inicio ------------------------------------------------------------------
   nav_panel(
     shinyjs::useShinyjs(),  # Set up shinyjs
-    tags$head(tags$link(href = "favicon-32x32.png", rel = "icon"),),
+    tags$head(
+      tags$link(href = "favicon-32x32.png", rel = "icon"),
+      tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")),
     tags$style(".modal-dialog { top: -90px !important;}"),
     title = tags$span("Medios de comunicación", class = "me-3"),
     icon  = icon("newspaper"),
@@ -165,14 +171,24 @@ page_navbar(
     title = tags$span("Acerca de", class = "me-3"),
     icon  = icon("info-circle"),
     style = "display: none;",
-    value = "acercade"
+    value = "acercade",
+    layout_column_wrap(
+      fillable = TRUE,
+      width = 1/1,
+      column(
+        width = 6,
+        offset = 3,
+        includeMarkdown("Rmd/acercade.Rmd")
+        )
+      )
     ),
   nav_spacer(),
   nav_item(
     shinyauthr::logoutUI(
       id = "logout", 
       label = "Cerrar Sesión",
-      class = "btn-info",
+      class = "btn-primary",
+      # style = "color: #5b365c;",
       icon = icon("rectangle-xmark")
     )
   )

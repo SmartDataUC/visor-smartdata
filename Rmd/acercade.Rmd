@@ -1,0 +1,29 @@
+**Visor _SmartData Redes y Medios_** es una aplicación desarrollada para **levantar y analizar datos** de manera automatizada desde medios de comunicación digitales y redes sociales. La **información generada** a través de estos procesos **es presentada a través de un visor de datos web**, disponible para las y los funcionarios del Gobierno Regional.
+
+El Visor SmartData redes y Medios cuenta con tres funcionalidades:
+
+### Capturar información
+
+La aplicación levanta automáticamente, durante la madrugada, artículos noticiosos publicados en medios de comunicación digitales y publicaciones o interacciones de redes sociales de cuentas de interés para el Gobierno Regional, incluyendo las cuentas de las 52 municipalidades de la Región Metropolitana, cuentas institucionales del Gobierno Regional y portales de noticias. La información es retroactiva y experimental, es decil recoge información desde el 2014 al presente, y explora formas de capturar datos con acceso limitado a través de la ciencia de datos.
+
+Medios de comunicación incluidos: \[latercera, eldinamo, elmostrador, biobiochile, cnnchile, theclinic, adnradio, Publimetro\]
+
+Temporalidad de extracción de medios de comunicación: Diaria. Durante la madrugada se extraen todas las noticias del día anterior.
+
+Redes sociales incluidas: \[356 cuentas institucionales de las 52 municipalidades de la Región Metropolitana, cuenta institucional del Gobierno Regional de Santiago, cuenta oficial del Gobernador Claudio Orrego, 8 cuentas institucionales de los medios de comunicación incluidos en el visor\]
+
+Temporalidad de extracción de redes sociales: Semanal. El lunes por la madrugada se extraen todas las publicaciones e interacciones de la semana anterior.
+
+### Motor de análisis
+
+Los datos recogidos son procesados a través de técnicas de analítica avanzada para generación de datos útiles y comparables. Entre las capacidades analíticas de la herramienta se encuentran:
+
+- Categorizar los temas de noticias y publicaciones de manera automática, a través de modelos de aprendizaje de máquina y modelos de lenguaje colosal;
+- Identificar la comuna a la cual refiere la noticia, como también si se encuentra vinculada al GORE o al Gobernador, a través de técnicas de análisis de texto;
+- Evaluar si la noticia o el comentario tiene una connotación positiva, negativa, neutra, u otros similares, a través de modelos de análisis de sentimientos;
+- Reconocer tendencias, respecto a tópicos o hechos noticiosos, a través de técnicas de análisis de texto.
+
+
+### Visualizar datos
+
+La información es presentadas a través de un visor web, que permite al usuario acceder a visualizaciones dinámicas, que se actualizan diariamente y que pueden ser ajustadas a través de filtros por tiempo, categoría de noticias, comuna, entre otros parámetros. También son flexibles, teniendo acceso a visualizaciones predefinidas, pero con la posibilidad de explorar los datos con mayor granularidad temporal o conceptual dependiendo de las necesidades del usuario, a través de mapas, tablas, gráficos de barra, histogramas, gráficos de áreas apiladas, entre otros. Todas las visualizaciones son descargables, facilitando su uso en presentaciones e informes estratégicos.
