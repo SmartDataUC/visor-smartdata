@@ -232,17 +232,17 @@ smart_sidebar <- sidebar(
     language = "es"),
   selectizeInput(
     "categorias",
-    "Categorías",
+    tags$span("Categorías", class = "tt"), 
     choices = opts_categorias,
     multiple  = TRUE,
-    options = list(placeholder = "Todas las categorías", maxItems = 99999)
+    options = list(placeholder = "Todas", maxItems = 99999)
   ),
   selectizeInput(
     "comunas",
-    "Comunas",
+    tags$span("Comunas", class = "tt"),
     choices = opts_comunas,
     multiple  = TRUE,
-    options = list(placeholder = "Todas las comunas")
+    options = list(placeholder = "Todas")
   ),
   tags$small(bs_icon("info-circle"), uiOutput("fecha_info", inline = TRUE), class = "text-muted float-right")
   # selectizeInput("tiempo", "Periodo", choices = opts_tiempo),
