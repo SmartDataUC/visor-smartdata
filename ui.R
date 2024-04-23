@@ -43,7 +43,7 @@ page_navbar(
       width = 1/2,
       card(
         card_header(
-          "Noticias por categoría",
+          tags$span("Noticias por categoría", class = "tt"),
           popover(
             bs_icon("info-circle"),
             title = "Noticias por categoría",
@@ -55,7 +55,7 @@ page_navbar(
       card(
         card_header(
           tags$span(
-            "Conceptos más frecuentes",
+            tags$span("Conceptos más frecuentes", class = "tt"),
             popover(
               bs_icon("info-circle"),
               title = "Conceptos más frecuentes",

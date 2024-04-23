@@ -30,7 +30,7 @@ PARS <- list(
   fg = "#454546",
   color_chart = "#6E438B",
   base_font = "Open Sans",
-  heading_font = "Montserrat",
+  heading_font = "Gotham Bold",
   palette = c("#C4308F", "#B23FA5", "#6E438B", "#485497", "#53BAAE")
 )
 
@@ -73,7 +73,11 @@ smart_theme <- bs_theme(
   # primary = "#000",
   primary = PARS$color_chart,
   base_font = font_google(PARS$base_font),
-  heading_font = font_google(PARS$heading_font),
+  # heading_font = font_google(PARS$heading_font),
+  heading_font =  font_face(
+    family = 'Gotham',
+    src = "url('../Gotham-Bold.ttf') format('truetype')"
+    ),
   "popover-max-width" = "400px"
 )
 
@@ -218,7 +222,7 @@ smart_sidebar <- sidebar(
   width = 300,
   dateRangeInput(
     "fecha",
-    "Fechas", 
+    tags$span("Fechas", class = "tt"), 
     min   = mindate,
     # start = Sys.Date() - months(1) + days(1),
     start = Sys.Date() - days(6),

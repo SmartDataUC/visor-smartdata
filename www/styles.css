@@ -3,3 +3,7 @@
     background: rgb(156,43,133);
     background: linear-gradient(90deg, rgba(156,43,133,1) 0%, rgba(109,68,146,1) 100%);
 }
+
+.tt {
+  font-family: "Gotham";
+}
