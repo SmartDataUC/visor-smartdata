@@ -1,12 +1,7 @@
 page_navbar(
   id = "mainnav",
   title = tagList(
-    tags$img(src = "gs.png",        width = "100px", height = "auto", class = "me-3"),
-    tags$img(src = "cegir.png", width = "150x",  height = "auto", class = "me-3"),
-    tags$img(src = "core.png",  width = "75px",  height = "auto", class = "me-3"),
-    tags$img(src = "puc.png",   width = "35px",  height = "auto", class = "me-3"),
-    # tags$img(src = "logo.png", width = "100px", height = "auto", class = "me-3"),
-    # tags$b("SmartDataCiudadano", class = "h6", style = "font-weight:800")
+    tags$img(src = "logo-gorecegir.png", width = "360px", height = "auto", class = "me-3")
   ),
   # bg = PARS$bg,
   lang = "es",
@@ -182,6 +177,9 @@ page_navbar(
       )
     ),
   nav_spacer(),
+  nav_item(
+    tags$img(src = "logo-core.svg", width = "100px", height = "auto", class = "me-3")
+  ),
   nav_item(
     shinyauthr::logoutUI(
       id = "logout", 
