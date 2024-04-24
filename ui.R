@@ -105,30 +105,30 @@ page_navbar(
     leafletOutput("map", width="100%", height="100%")
   ),
   # rrss --------------------------------------------------------------------
-  nav_panel(
-    title = tags$span("Redes Sociales", class = "me-3"),
-    icon  = icon("temperature-half"),
-    value = "rrss",
-    style = "display: none;",
-    layout_column_wrap(
-      width = 1/2,
-      card(
-        card_header(tags$span("Posts por fecha", class = "tt")),
-        highchartOutput("hc_rrss_fecha")
-      ),
-      # card(
-      #   card_header("Chart 2"),
-      #   highchartOutput("hc_rrss_2")
-      # ),
-      # card(
-      #   card_header("Chart 3"),
-      #   highchartOutput("hc_rrss_3")
-      # ),
-      card(card_header(tags$span("Top 100 Contenido con mayor actividad", class = "tt")),
-        DT::dataTableOutput("dt_rrss_mas_activos")
-      ),
-    )
-  ),
+  # nav_panel(
+  #   title = tags$span("Redes Sociales", class = "me-3"),
+  #   icon  = icon("temperature-half"),
+  #   value = "rrss",
+  #   style = "display: none;",
+  #   layout_column_wrap(
+  #     width = 1/2,
+  #     card(
+  #       card_header(tags$span("Posts por fecha", class = "tt")),
+  #       highchartOutput("hc_rrss_fecha")
+  #     ),
+  #     # card(
+  #     #   card_header("Chart 2"),
+  #     #   highchartOutput("hc_rrss_2")
+  #     # ),
+  #     # card(
+  #     #   card_header("Chart 3"),
+  #     #   highchartOutput("hc_rrss_3")
+  #     # ),
+  #     card(card_header(tags$span("Top 100 Contenido con mayor actividad", class = "tt")),
+  #       DT::dataTableOutput("dt_rrss_mas_activos")
+  #     ),
+  #   )
+  # ),
   # tendencias --------------------------------------------------------------
   nav_panel(
     title = tags$span("Tendencias", class = "me-3"),
