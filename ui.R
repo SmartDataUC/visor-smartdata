@@ -71,7 +71,7 @@ page_navbar(
       card(
         card_header(
           tags$span(
-            "Presencia GORE en noticias",
+            tags$span("Presencia GORE en noticias", class = "tt"),
             popover(
               bs_icon("info-circle"),
               title = "Presencia GORE en noticias",
@@ -84,7 +84,7 @@ page_navbar(
       card(
         card_header(
           tags$span(
-            "Percepción de noticias",
+            tags$span("Percepción de noticias", class = "tt"),
             popover(
               bs_icon("info-circle"),
               title = "Hechos noticiosos",
@@ -113,7 +113,7 @@ page_navbar(
     layout_column_wrap(
       width = 1/2,
       card(
-        card_header("Posts por fecha"),
+        card_header(tags$span("Posts por fecha", class = "tt")),
         highchartOutput("hc_rrss_fecha")
       ),
       # card(
@@ -124,8 +124,7 @@ page_navbar(
       #   card_header("Chart 3"),
       #   highchartOutput("hc_rrss_3")
       # ),
-      card(
-        card_header("Top 100 Contenido con mayor actividad"),
+      card(card_header(tags$span("Top 100 Contenido con mayor actividad", class = "tt")),
         DT::dataTableOutput("dt_rrss_mas_activos")
       ),
     )
@@ -154,14 +153,14 @@ page_navbar(
       width = 1/2,
       
       card(
-        card_header("Tendencia temporal"),
+        card_header(tags$span("Tendencia temporal", class = "tt")),
            # min_heigth = 300,
            # withSpinner(
            highchartOutput("trend_hc1")
            # )
         ),
       card(
-        card_header("Tendencia temporal"),
+        card_header(tags$span("Tendencia temporal", class = "tt")),
         highchartOutput("trend_hc2")
           )
       )
