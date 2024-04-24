@@ -81,19 +81,19 @@ page_navbar(
           ),
         highchartOutput("hc_gorepresc")
         ),
-      card(
-        card_header(
-          tags$span(
-            tags$span("Percepción de noticias", class = "tt"),
-            popover(
-              bs_icon("info-circle"),
-              title = "Hechos noticiosos",
-              "Texto sobre Hechos noticiosos"
-            )
-          )
-        ),
-        highchartOutput("hc_prcepcion")
-        ),
+      # card(
+      #   card_header(
+      #     tags$span(
+      #       tags$span("Percepción de noticias", class = "tt"),
+      #       popover(
+      #         bs_icon("info-circle"),
+      #         title = "Hechos noticiosos",
+      #         "Texto sobre Hechos noticiosos"
+      #       )
+      #     )
+      #   ),
+      #   highchartOutput("hc_prcepcion")
+      #   ),
       )
     ),
   # comunas -----------------------------------------------------------------
