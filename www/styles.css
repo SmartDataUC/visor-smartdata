@@ -1,7 +1,9 @@
 .navbar, .navbar-default {
     background-image: url('banner.svg') !important;
-    background: rgb(156,43,133);
+    background-size: contain !important;
+    /*background: rgb(156,43,133);
     background: linear-gradient(90deg, rgba(156,43,133,1) 0%, rgba(109,68,146,1) 100%);
+    */
 }
 
 .tt {

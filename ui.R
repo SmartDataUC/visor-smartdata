@@ -1,7 +1,7 @@
 page_navbar(
   id = "mainnav",
   title = tagList(
-    tags$img(src = "logo-gorecegir.png", width = "360px", height = "auto", class = "me-3")
+    tags$img(src = "logo-gorecegir.png", width = "400px", height = "auto", class = "me-3")
   ),
   # bg = PARS$bg,
   lang = "es",
@@ -158,7 +158,7 @@ page_navbar(
            # )
         ),
       card(
-        card_header(tags$span("Tendencia temporal", class = "tt")),
+        card_header(tags$span("Cantidad de Menciones del Término en Artículos Noticiosos", class = "tt")),
         highchartOutput("trend_hc2")
           )
       )
