@@ -234,10 +234,10 @@ reporte_noticias_categoria <- function(data_noticias, categ){
     layout_column_wrap(
       width = NULL, height = 250, fill = FALSE,
       style = htmltools::css(grid_template_columns = "6fr 6fr"),
-      card(card_header("Tendencia histórica")    , hc1),
-      card(card_header("Distribución medios"), hc2)
+      card(card_header(tags$span("Tendencia histórica", class = "tt"))    , hc1),
+      card(card_header(tags$span("Distribución medios", class = "tt")), hc2)
     ),
-    card(card_header("Noticias de la categoría"), doutdt, height = "350px")
+    card(card_header(tags$span("Noticias de la categoría", class = "tt")), doutdt, height = "350px")
   )
   
 }
@@ -264,10 +264,10 @@ reporte_concepto_termino <- function(data_noticias, term){
     layout_column_wrap(
       width = NULL, height = 250, fill = FALSE,
       style = htmltools::css(grid_template_columns = "6fr 6fr"),
-      card(card_header("Tendencia histórica")    , hc1),
-      card(card_header("Distribución categorías"), hc2)
+      card(card_header(tags$span("Tendencia histórica", class = "tt")), hc1),
+      card(card_header(tags$span("Distribución medios", class = "tt")), hc2)
     ),
-    card(card_header("Noticias donde se encuentra presente el concepto"), doutdt, height = "350px")
+    card(card_header(tags$span("Noticias donde se encuentra presente el concepto", class = "tt")), doutdt, height = "350px")
   )
   
 }
@@ -291,10 +291,10 @@ reporte_percepcion <- function(data_noticias, percp = "Negativo"){
     layout_column_wrap(
       width = NULL, height = 250, fill = FALSE,
       style = htmltools::css(grid_template_columns = "6fr 6fr"),
-      card(card_header("Tendencia histórica")    , hc1),
-      card(card_header("Conceptos más frecuentes"), hc2)
+      card(card_header(tags$span("Tendencia histórica", class = "tt"))    , hc1),
+      card(card_header(tags$span("Conceptos más frecuentes", class = "tt")), hc2)
     ),
-    card(card_header("Noticias asociadas al sentimiento"), doutdt, height = "350px")
+    card(card_header(tags$span("Noticias asociadas al sentimiento", class = "tt")), doutdt, height = "350px")
   )
   
 }
@@ -332,10 +332,10 @@ reporte_comuna <- function(data_noticias, comunaid = "pudahuel", ng = 1){
     layout_column_wrap(
       width = NULL, height = 250, fill = FALSE,
       style = htmltools::css(grid_template_columns = "6fr 6fr"),
-      card(card_header("Tendencia histórica")    , hc1),
-      card(card_header("Conceptos más frecuentes"), hc2)
+      card(card_header(tags$span("Tendencia histórica", class = "tt"))    , hc1),
+      card(card_header(tags$span("Conceptos más frecuentes", class = "tt")), hc2)
     ),
-    card(card_header("Noticias en donde se identifica la presencia de la comuna"), doutdt, height = "350px")
+    card(card_header(tags$span("Noticias en donde se identifica la presencia de la comuna", class = "tt")), doutdt, height = "350px")
   )
   
 }
