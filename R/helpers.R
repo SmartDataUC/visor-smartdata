@@ -13,7 +13,8 @@ get_noticias_date_range <- function(d1, d2, categorias = NULL, comunas = NULL){
   cli::cli_inform("running get_noticias_date_range: {d1} a {d2}. {diffdate2(d1, d2)}")
   
   data_noticias <- tbl(pool, "news") |> 
-    filter(d1 <= date, date <= d2)
+    # fix #9
+    filter(d1 <= as_date(date), as_date(date) <= d2)
   
   if(!is.null(categorias)){
     data_noticias <- data_noticias |> 
