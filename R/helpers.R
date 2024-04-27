@@ -27,7 +27,7 @@ get_noticias_date_range <- function(d1, d2, categorias = NULL, comunas = NULL){
   }
   
   data_noticias <- data_noticias |> 
-    select(title = clean_title, body = clean_body, categoria = category_1, url, 
+    select(title = title, body = clean_body, categoria = category_1, url, 
            media, date, comunas, gore, sentiment) |> 
     collect() |> 
     mutate(date = as_date(date))
