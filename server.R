@@ -283,9 +283,12 @@ server <- function(input, output, session) {
       hcpxy_update(xAxis = list(categories = head(data_noticias_ngram$ngram, 10))) |> 
       hcpxy_update_series(id = "data", data =  head(data_noticias_ngram$n, 10))
 
+    c <- highcharter:::fix_1_length_data(data_noticias_categorias$categoria)
+    d <- highcharter:::fix_1_length_data(data_noticias_categorias$n)
+    
     highchartProxy("hc_noticiasc") |> 
-      hcpxy_update(xAxis = list(categories = data_noticias_categorias$categoria)) |> 
-      hcpxy_update_series(id = "data", data =  data_noticias_categorias$n)
+      hcpxy_update(xAxis = list(categories = c)) |> 
+      hcpxy_update_series(id = "data", data =  d)
     
     highchartProxy("hc_gorepresc") |>
       hcpxy_update_series(id = "data", data = data_noticias_prescgore)
