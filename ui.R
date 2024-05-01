@@ -133,6 +133,15 @@ page_navbar(
     icon  = icon("arrow-trend-up"),
     value = "tendencias",
     style = "display: none;",
+    popover(
+      tags$span(tags$span("Instrucciones"), bs_icon("info-circle")),
+      title = "Funcionalidad",
+      "La herramienta de tendencias permite buscar y explorar la frecuencia de palabras específicas en artículos noticiosos publicados en las fechas seleccionadas por el usuario.
+      Para utilizar la herramienta, primero ajuste en el menú izquierdo el rango de fechas en que desea realizar la búsqueda.
+      Luego, ingrese una palabra en la herramienta y pulse el botón con el ícono '+' para agregarla.
+      Puede agregar más de una palabra si desea comparar la frecuencia de varios términos. Cuando finalice de agregar palabras, haga click en el botón 'Analizar'.
+      Los resultados se desplegarán en dos visualizaciones: una corresponde a una serie de tiempo para el periodo analizado, y la segunda es un gráfico de barras que representa la cantidad de veces que cada término aparece en todos los artículos analizados."
+    ),
     shinyWidgets::searchInput(
       inputId = "tags",
       # label = "Click search icon to update or hit 'Enter'",
