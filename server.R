@@ -9,62 +9,15 @@
 server <- function(input, output, session) {
   
   # auth --------------------------------------------------------------------
-  credentials <- shinyauthr::loginServer(
-    id = "login",
-    data = readxl::read_excel("data/users.xlsx"),
-    user_col = user,
-    pwd_col = password,
-    log_out = reactive(logout_init())
+  # call the server part
+  # check_credentials returns a function to authenticate users
+  res_auth <- shinymanager::secure_server(
+    check_credentials = shinymanager::check_credentials(
+      db = PARS$slqlite_path,
+      passphrase = NULL
+    )
   )
-  
-  # call the logout module with reactive trigger to hide/show
-  logout_init <- shinyauthr::logoutServer(
-    id = "logout",
-    active = reactive(credentials()$user_auth)
-  )
-  
-  observe({
-    
-    if(credentials()$user_auth){
-      cli::cli_alert_success("user logueado")
-      # sidebar_toggle("mainsidebar", open = TRUE)
-      nav_hide("mainnav", "auth")
-      
-      nav_show("mainnav", "medios")
-      nav_show("mainnav", "comunas")
-      nav_show("mainnav", "rrss")
-      nav_show("mainnav", "tendencias")
-      nav_show("mainnav", "acercade")
-  
-      nav_select("mainnav", "medios")
-      
-      sidebar_toggle("mainsidebar", open = TRUE)
-    } else {
-      cli::cli_alert_danger("user no logueado")
-      # sidebar_toggle("mainsidebar", open = FALSE)
-      nav_show("mainnav", "auth")
-      
-      nav_hide("mainnav", "medios")
-      nav_hide("mainnav", "comunas")
-      nav_hide("mainnav", "rrss")
-      nav_hide("mainnav", "tendencias")
-      nav_hide("mainnav", "acercade")
-      
-      nav_select("mainnav", "auth")
-    }
-    
-    print(credentials())
-    
-  }) |>
-    bindEvent(credentials())
-  
-  observe({
-    cli::cli_alert_danger("user logout!")
-    sidebar_toggle("mainsidebar", open = FALSE)
-  }) |>
-    bindEvent(logout_init())
-  
-  
+
   # Inicio ------------------------------------------------------------------
   # actualizar dateRange para la última semana al partir sesión
   updateDateRangeInput(
@@ -241,26 +194,29 @@ server <- function(input, output, session) {
   observe({
     
     cli::cli_alert_info("observe actualización graficos")
-    
+
     highchartProxy("hc_conceptos") |> hcpxy_loading(action = "show")
     highchartProxy("hc_noticiasc") |> hcpxy_loading(action = "show")
     highchartProxy("hc_gorepresc") |> hcpxy_loading(action = "show")
     highchartProxy("hc_prcepcion") |> hcpxy_loading(action = "show")
-    
+
     cli::cli_alert_info("observe actualización graficos: data")
     # data_noticias            <- get_noticias_date_range(input$fecha[1], input$fecha[2], input$categorias, input$comunas)
     data_noticias(get_noticias_date_range(input$fecha[1], input$fecha[2], input$categorias, input$comunas))
-    
+
     data_noticias            <- data_noticias()
+    
+    if(nrow(data_noticias) == 0) return(TRUE)
+    
     data_noticias_ngram      <- get_noticias_ngram(data_noticias, as.numeric(input$ng))
     data_noticias_categorias <- get_noticias_categorias(data_noticias)
-    
-    data_noticias_prescgore  <- data_noticias |> 
-      group_by(name = categoria) |> 
-      summarise(value = 100 * mean(as.double(gore))) |> 
-      arrange(desc(value)) |> 
+
+    data_noticias_prescgore  <- data_noticias |>
+      group_by(name = categoria) |>
+      summarise(value = 100 * mean(as.double(gore))) |>
+      arrange(desc(value)) |>
       highcharter::list_parse()
-    
+
     data_noticias_gorepresc <- data_noticias |>
       mutate(sentiment = coalesce(sentiment, "NEU")) |>
       count(date, sentiment) |>
@@ -276,23 +232,23 @@ server <- function(input, output, session) {
 
     # glimpse(data_noticias_prescgore)
     # glimpse(data_noticias_gorepresc)
-  
+
     cli::cli_alert_info("observe actualización graficos: graficos")
-    
-    highchartProxy("hc_conceptos") |> 
-      hcpxy_update(xAxis = list(categories = head(data_noticias_ngram$ngram, 10))) |> 
+
+    highchartProxy("hc_conceptos") |>
+      hcpxy_update(xAxis = list(categories = head(data_noticias_ngram$ngram, 10))) |>
       hcpxy_update_series(id = "data", data =  head(data_noticias_ngram$n, 10))
 
     c <- highcharter:::fix_1_length_data(data_noticias_categorias$categoria)
     d <- highcharter:::fix_1_length_data(data_noticias_categorias$n)
-    
-    highchartProxy("hc_noticiasc") |> 
-      hcpxy_update(xAxis = list(categories = c)) |> 
+
+    highchartProxy("hc_noticiasc") |>
+      hcpxy_update(xAxis = list(categories = c)) |>
       hcpxy_update_series(id = "data", data =  d)
-    
+
     highchartProxy("hc_gorepresc") |>
       hcpxy_update_series(id = "data", data = data_noticias_prescgore)
-    
+
     highchartProxy("hc_prcepcion") |>
       hcpxy_set_data(
         type = "area",
@@ -300,15 +256,13 @@ server <- function(input, output, session) {
         hcaes(date, n, group = sentiment),
         redraw = TRUE
       )
-    
+
     highchartProxy("hc_conceptos") |> hcpxy_loading(action = "hide")
     highchartProxy("hc_noticiasc") |> hcpxy_loading(action = "hide")
     highchartProxy("hc_gorepresc") |> hcpxy_loading(action = "hide")
     highchartProxy("hc_prcepcion") |> hcpxy_loading(action = "hide")
-    
+
     cli::cli_alert_info("observe actualización graficos: fin")
-    
-    
     
   # })
   }) |>

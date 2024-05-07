@@ -31,7 +31,8 @@ PARS <- list(
   color_chart = "#6E438B",
   base_font = "Open Sans",
   heading_font = "Gotham Bold",
-  palette = c("#C4308F", "#B23FA5", "#6E438B", "#485497", "#53BAAE")
+  palette = c("#C4308F", "#B23FA5", "#6E438B", "#485497", "#53BAAE"),
+  slqlite_path = "db/database.sqlite"
 )
 
 # data --------------------------------------------------------------------
@@ -43,7 +44,6 @@ dcomunas <- sf::read_sf("data/comunas_0001.gpkg")
 
 pool <- pool::dbPool(
   drv = RPostgres::Postgres(),
-  # dbname = "smartdata",
   user = "postgres",
   password = Sys.getenv("PASS"),
   host = Sys.getenv("HOST"),
@@ -53,17 +53,6 @@ pool <- pool::dbPool(
 if(!interactive()) {
   onStop(function() { pool::poolClose(pool)})
 }
-
-
-# data rrss ---------------------------------------------------------------
-# read_csv("data/gore_insta_posts.csv") |> glimpse()
-drrhh <- bind_rows(
-  read_csv("data/gore_insta_posts.csv") |> mutate(categoria = "GORE"),
-  read_csv("data/orrego_insta_posts.csv") |> mutate(categoria = "Gobernador")
-) |> 
-  select(id, categoria, caption, inputUrl, timestamp, likesCount, commentsCount, url, inputUrl,
-         commentsAll) |> 
-  distinct(id, .keep_all = TRUE) 
 
 # theme -------------------------------------------------------------------
 cli::cli_h1("theme")
@@ -217,7 +206,7 @@ opts_comunas <- tbl(pool, "news") |>
 
 smart_sidebar <- sidebar(
   id = "sidebar",
-  open = FALSE,
+  # open = FALSE,
   bg = PARS$bg,
   width = 300,
   dateRangeInput(
@@ -274,12 +263,18 @@ datatable <- purrr::partial(
     )
   )
 
-# test --------------------------------------------------------------------
-DBI::dbListTables(pool)
 
-# tbl(pool, "noticias")
-# 
-# tbl(pool, "noticias") |>
-#   summarise(min(date), max(date))
-
+# users -------------------------------------------------------------------
+if(!file.exists(PARS$slqlite_path)){
+  credentials <- readxl::read_excel("data/users.xlsx")
+  
+  # Init the database
+  shinymanager::create_db(
+    credentials_data = credentials,
+    sqlite_path = PARS$slqlite_path,
+    # passphrase = key_get("R-shinymanager-key", "obiwankenobi")
+    passphrase = NULL
+  )
+  
+}
 

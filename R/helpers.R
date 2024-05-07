@@ -6,6 +6,8 @@ get_noticias_date_range <- function(d1, d2, categorias = NULL, comunas = NULL){
   # categorias <- NULL
   # comunas <- NULL
   
+  # if(is.null(d1)) return(tibble())
+  
   ds <- c(d1, d2)
   d1 <- min(ds)
   d2 <- max(ds)
@@ -51,6 +53,8 @@ get_noticias_ngram <- function(data_noticias, ng = 3){
   
   cli::cli_inform("running get_noticias_ngram: {ng}")
   
+  if(nrow(data_noticias) == 0) return(tibble(ngram = "", n = 0))
+    
   data_noticias_ngram <- data_noticias |> 
     unnest_tokens(ngram, body, token = "ngrams", n = ng) |> 
     count(ngram, sort = TRUE)

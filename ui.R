@@ -1,5 +1,6 @@
 page_navbar(
   id = "mainnav",
+  window_title = "Visor Smart-data",
   title = tagList(
     tags$img(src = "logo-gorecegir.png", width = "400px", height = "auto", class = "me-3")
   ),
@@ -8,21 +9,6 @@ page_navbar(
   theme = smart_theme,
   inverse = TRUE,
   sidebar = smart_sidebar,
-  # inicio sesión -----------------------------------------------------------
-  nav_panel(
-    title = "Iniciar Sesión",
-    icon  = icon("right-to-bracket"),
-    value = "auth",
-    shinyauthr::loginUI(
-      id = "login",
-      # title = "Inicio de Sesión",
-      title = NULL,
-      user_title = "Usuario",
-      pass_title = "Contraseña",
-      login_title = "Iniciar Sesión",
-      error_message = "Usuario o contraseña invalidos"
-    ),
-  ),
   # inicio ------------------------------------------------------------------
   nav_panel(
     shinyjs::useShinyjs(),  # Set up shinyjs
@@ -33,7 +19,7 @@ page_navbar(
     title = tags$span("Medios de comunicación", class = "me-3"),
     icon  = icon("newspaper"),
     value = "medios",
-    style = "display: none;",
+   #style = "display: none;",
     layout_column_wrap(
       width = 1,
       layout_column_wrap(
@@ -99,7 +85,7 @@ page_navbar(
     title = tags$span("Comunas", class = "me-3"),
     icon  = icon("map-location-dot"),
     value = "comunas",
-    style = "display: none;",
+   #style = "display: none;",
     leafletOutput("map", width="100%", height="100%")
   ),
   # rrss --------------------------------------------------------------------
@@ -132,7 +118,7 @@ page_navbar(
     title = tags$span("Tendencias", class = "me-3"),
     icon  = icon("arrow-trend-up"),
     value = "tendencias",
-    style = "display: none;",
+   #style = "display: none;",
     popover(
       tags$span(tags$span("Instrucciones"), bs_icon("info-circle")),
       title = "Funcionalidad",
@@ -176,7 +162,7 @@ page_navbar(
   nav_panel(
     title = tags$span("Acerca de", class = "me-3"),
     icon  = icon("info-circle"),
-    style = "display: none;",
+   #style = "display: none;",
     value = "acercade",
     layout_column_wrap(
       fillable = TRUE,
@@ -202,4 +188,4 @@ page_navbar(
     )
   )
   # fin ---------------------------------------------------------------------
-)
+) |> shinymanager::secure_app(language = "es", theme = smart_theme, enable_admin = TRUE, id = "loginid")
