@@ -33,7 +33,15 @@ get_noticias_date_range <- function(d1, d2, categorias = NULL, comunas = NULL){
     select(title = title, body = clean_body, categoria = category_1, url, 
            media, date, comunas, gore, sentiment) |> 
     collect() |> 
-    mutate(date = as_date(date))
+    mutate(date_time = date, date = as_date(date))
+  
+  cli::cli_inform("running get_noticias_date_range: removing duplicated rows.")
+  
+  data_noticias <- data_noticias |>
+    group_by(title, media) |> 
+    filter(date_time == max(date_time)) |> 
+    ungroup() |> 
+    select(-date_time)
   
   cli::cli_inform("running get_noticias_date_range: str_clean a body.")
   
