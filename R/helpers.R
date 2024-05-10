@@ -38,10 +38,11 @@ get_noticias_date_range <- function(d1, d2, categorias = NULL, comunas = NULL){
   cli::cli_inform("running get_noticias_date_range: removing duplicated rows.")
   
   data_noticias <- data_noticias |>
+    arrange(date_time) |> 
     group_by(title, media) |> 
-    filter(date_time == max(date_time)) |> 
-    ungroup() |> 
-    select(-date_time)
+    # filter(date_time == max(date_time)) |>
+    filter(row_number() == n()) |>
+    ungroup() # |>  select(-date_time)
   
   cli::cli_inform("running get_noticias_date_range: str_clean a body.")
   
