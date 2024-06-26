@@ -249,7 +249,7 @@ reporte_noticias_categoria <- function(data_noticias, categ){
       width = NULL, height = 250, fill = FALSE,
       style = htmltools::css(grid_template_columns = "6fr 6fr"),
       card(card_header(tags$span("Tendencia histórica", class = "tt"))    , hc1),
-      card(card_header(tags$span("Distribución medios", class = "tt")), hc2)
+      card(card_header(tags$span("Distribución de medios", class = "tt")), hc2)
     ),
     card(card_header(tags$span("Noticias de la categoría", class = "tt")), doutdt, height = "350px")
   )
@@ -279,7 +279,7 @@ reporte_concepto_termino <- function(data_noticias, term){
       width = NULL, height = 250, fill = FALSE,
       style = htmltools::css(grid_template_columns = "6fr 6fr"),
       card(card_header(tags$span("Tendencia histórica", class = "tt")), hc1),
-      card(card_header(tags$span("Distribución medios", class = "tt")), hc2)
+      card(card_header(tags$span("Distribución de medios", class = "tt")), hc2)
     ),
     card(card_header(tags$span("Noticias donde se encuentra presente el concepto", class = "tt")), doutdt, height = "350px")
   )
@@ -353,3 +353,73 @@ reporte_comuna <- function(data_noticias, comunaid = "pudahuel", ng = 1){
   )
   
 }
+
+
+# home / resumen ----------------------------------------------------------
+get_resumen <- function(){
+  
+  hoy <- Sys.Date()
+  # hacer una logica que si son entre las 1 y 4 AM mirar el dia anterior
+  
+  data_noticias <- get_noticias_date_range(hoy - 1, hoy)
+  
+  layout_column_wrap(
+    width = 1,
+    fill = TRUE,
+    fillable = TRUE,
+    layout_column_wrap(
+      width = 1/3,
+      fill = TRUE,
+      fillable = TRUE,
+      card(card_header(class = "primary", "A header"),
+           markdown("Some text with a [link](https://github.com).")
+      ),
+      card(card_header(class = "secondary", "A header"),
+           nrow(data_noticias)
+      ),
+      card(card_header(class = "primary", "A header"),
+           data_noticias$title[1]
+      )
+    ),
+    layout_column_wrap(
+      width = 1/3,
+      fill = TRUE,
+      fillable = TRUE,
+      card(card_header(class = "primary", "A header"),
+           markdown("Some text with a [link](https://github.com).")
+      ),
+      card(card_header(class = "secondary", "A header"),
+           nrow(data_noticias)
+      )
+    )
+  )
+  
+  
+  
+}
+
+
+# colors ------------------------------------------------------------------
+get_ncolors <- function(colors, n){
+  cols <- colorRampPalette(colors= colors)(n)
+  cols
+}
+
+vector_a_colores <- function(valores, color_min = "gray", color_max = "darkred") {
+  # Normalizar los valores entre 0 y 1
+  valores_norm <- (valores - min(valores)) / (max(valores) - min(valores))
+  
+  # Crear una paleta de colores
+  paleta_colores <- colorRampPalette(c(color_min, color_max))(length(valores))
+  
+  # Asignar colores basados en los valores normalizados
+  colores <- paleta_colores[cut(valores_norm, breaks = length(valores), labels = FALSE)]
+  
+  cut(valores_norm, breaks = length(valores))
+  
+  return(colores)
+}
+
+
+
+

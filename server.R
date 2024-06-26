@@ -44,22 +44,37 @@ server <- function(input, output, session) {
   data_noticias <- reactiveVal(get_noticias_date_range(Sys.Date() - days(6), Sys.Date()))
   # data_noticias <- get_noticias_date_range(Sys.Date() - months(1) + days(1), Sys.Date())
   
+  output$resumen <- renderUI(get_resumen())
+  
   output$hc_noticiasc <- renderHighchart({
+    
     data_noticias <- isolate(data_noticias())
     
     data_noticias_categorias <- get_noticias_categorias(data_noticias)
     
+    cols <- vector_a_colores(valores = data_noticias_categorias$n, 
+                             color_min = PARS$color_gray,
+                             color_max = PARS$color_chart)
+
     highchart() |>
       # hc_subtitle(text = "Treding Temas") |> 
       hc_add_series(
         data = data_noticias_categorias$n,
         id = "data",
         type = "bar",
-        color = PARS$color_chart,
+        # color = PARS$color_chart,
         showInLegend = FALSE,
+        colorByPoint = TRUE,
         name = "Noticias por categoría"
       ) |> 
-      hc_xAxis(categories = data_noticias_categorias$categoria) |> 
+      hc_colors(cols) |> 
+      hc_xAxis(
+        categories = data_noticias_categorias$categoria,
+        labels = list(
+          align = 'right',
+          useHTML = FALSE
+          )
+        ) |> 
       hc_plotOptions(
         series = list(
           cursor = "pointer",
@@ -71,7 +86,13 @@ server <- function(input, output, session) {
   
   output$hc_conceptos <- renderHighchart({
     data_noticias <- isolate(data_noticias())
+    
     data_noticias_ngram <- head(get_noticias_ngram(data_noticias, 1), 10)
+    
+    cols <- vector_a_colores(valores = data_noticias_ngram$n, 
+                             color_min = PARS$color_gray,
+                             color_max = PARS$palette[1])
+    
     highchart() |>
       # hc_subtitle(text = "Top 10 Trending Palabras") |>
       hc_add_series(
@@ -82,6 +103,7 @@ server <- function(input, output, session) {
         showInLegend = FALSE,
         name = "Conceptos más frecuentes"
       ) |>
+      hc_colors(cols) |> 
       hc_xAxis(categories = data_noticias_ngram$ngram) |>
       hc_plotOptions(
         series = list(
@@ -180,7 +202,7 @@ server <- function(input, output, session) {
         zoomControl = TRUE
       )
     ) |>
-      setView(lng =  -70.64827, lat = -33.45694, zoom = 9) |>
+      setView(lng =  -70.64827, lat = -33.45494, zoom = 9) |>
       addProviderTiles(providers$CartoDB.Positron,  group = "Administrativo") 
     
   })
@@ -190,7 +212,7 @@ server <- function(input, output, session) {
   #   }) |>
   #   debounce(2000)
 
-  # observeEvent para actualizar los 3 primero graficos
+  # observeEvent para actualizar los 3 primeros graficos
   observe({
     
     cli::cli_alert_info("observe actualización graficos")
@@ -235,16 +257,18 @@ server <- function(input, output, session) {
 
     cli::cli_alert_info("observe actualización graficos: graficos")
 
-    highchartProxy("hc_conceptos") |>
-      hcpxy_update(xAxis = list(categories = head(data_noticias_ngram$ngram, 10))) |>
-      hcpxy_update_series(id = "data", data =  head(data_noticias_ngram$n, 10))
-
     c <- highcharter:::fix_1_length_data(data_noticias_categorias$categoria)
     d <- highcharter:::fix_1_length_data(data_noticias_categorias$n)
-
+    cols <- vector_a_colores(valores = data_noticias_categorias$n, color_min = PARS$color_gray, color_max = PARS$color_chart)
     highchartProxy("hc_noticiasc") |>
-      hcpxy_update(xAxis = list(categories = c)) |>
+      hcpxy_update(xAxis = list(categories = c, colors = cols)) |>
       hcpxy_update_series(id = "data", data =  d)
+    
+    
+    cols <- vector_a_colores(valores = data_noticias_ngram$n, color_min = PARS$color_gray, color_max = PARS$palette[1])
+    highchartProxy("hc_conceptos") |>
+      hcpxy_update(xAxis = list(categories = head(data_noticias_ngram$ngram, 10), colors = "red")) |>
+      hcpxy_update_series(id = "data", data =  head(data_noticias_ngram$n, 10))
 
     highchartProxy("hc_gorepresc") |>
       hcpxy_update_series(id = "data", data = data_noticias_prescgore)
@@ -268,8 +292,14 @@ server <- function(input, output, session) {
   }) |>
     bindEvent(input$fecha, input$categorias, input$comunas)
   
+  # r <- reactive({
+  #   invalidateLater(1000)
+  #   runif(1)
+  #   })
+  
   # mismo event que el de los graficos, pero para separar las logicas
   observe({
+    cli::cli_alert_info("observe del mapa: inicio")
     
     data_noticias            <- data_noticias()
     
@@ -289,10 +319,11 @@ server <- function(input, output, session) {
       )
     
     # viridisLite::plasma(15, end = .85) |> scales::show_col()
-    cols <-  viridisLite::plasma(15, end = .85, direction = -1)
+    # cols <-  viridisLite::plasma(15, end = .85, direction = -1)
     # cols <- sort(PARS$palette)
+    cols <- c(PARS$color_gray, PARS$color_chart)
     colorData <- dgeo[["n"]]
-    pal  <- colorBin(cols, colorData, 7, pretty = TRUE, na.color = "#C0C0C0")
+    pal  <- colorBin(cols, colorData, 7, pretty = TRUE, na.color = PARS$color_gray)
     
     # m <- leaflet() |> addTiles()
     m <- leafletProxy("map")
@@ -335,9 +366,11 @@ server <- function(input, output, session) {
         layerId   = "colorLegend",
         title = "Nº noticias"
       )
+    
+    cli::cli_alert_info("observe del mapa: fin")
 
   }) |>
-    bindEvent(input$fecha, input$categorias, input$comunas, input$mainnav) 
+    bindEvent(input$fecha, input$categorias, input$comunas, input$medionav) 
 
   observe({
 
@@ -347,9 +380,15 @@ server <- function(input, output, session) {
     data_noticias            <- data_noticias()
     data_noticias_ngram      <- get_noticias_ngram(data_noticias, as.numeric(input$ng))
 
+    d <- data_noticias_ngram |> 
+      head(10) |> 
+      mutate(color = vector_a_colores(n, color_min = PARS$color_gray, color_max = PARS$palette[1])) |> 
+      select(name = ngram, y = n, color) |> 
+      list_parse() 
+    
     highchartProxy("hc_conceptos") |>
       hcpxy_update(xAxis = list(categories = head(data_noticias_ngram$ngram, 10))) |>
-      hcpxy_update_series(id = "data", data =  head(data_noticias_ngram$n, 10))
+      hcpxy_update_series(id = "data", data = d)
 
     highchartProxy("hc_conceptos") |> hcpxy_loading(action = "hide")
 

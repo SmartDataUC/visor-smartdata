@@ -29,9 +29,10 @@ PARS <- list(
   bg = "#fff",
   fg = "#454546",
   color_chart = "#6E438B",
+  color_gray = "#d8d8d8",
   base_font = "Open Sans",
   heading_font = "Gotham Bold",
-  palette = c("#C4308F", "#B23FA5", "#6E438B", "#485497", "#53BAAE"),
+  palette = c("#c1368c", "#B23FA5", "#6E438B", "#485497", "#53BAAE"),
   slqlite_path = "db/database.sqlite"
 )
 
@@ -68,7 +69,8 @@ smart_theme <- bs_theme(
     src = "url('../Gotham-Bold.ttf') format('truetype')"
     ),
   "popover-max-width" = "400px"
-)
+) |> 
+  bs_add_rules("#medionav { @extend .justify-content-center }")
 
 # bslib::bs_theme_preview(smart_theme)
 
