@@ -187,6 +187,44 @@ str_clean <- function(x = c("Cath{í   B.arriga ", "otroa cosa")){
 # }
 
 
+# tabla to html text ------------------------------------------------------
+library(htmltools)
+
+tabla_a_html <- function(tabla, color_cat) {
+  filas_html <- list()
+  
+  for (i in 1:nrow(tabla)) {
+    primera_columna <- tags$b(style = str_glue("font-size: large;color:{color_cat};"), str_to_title(tabla[i, 1]))
+    segunda_columna <- tags$p(
+      tags$b(style = str_glue("font-size: large;color:{PARS$fg};"), tabla[i, 2]), 
+      tags$span(style = "font-size: x-small;", " Noticias")
+    )
+    fila_html <- tagList(primera_columna, segunda_columna)
+    filas_html <- c(filas_html, fila_html)
+  }
+  
+  contenido_html <- tags$div(style = "line-height:1.4;",
+    do.call(tagList, filas_html)
+  )
+  
+  return(contenido_html)
+}
+
+tabla_a_html_link_web <- function(tabla) {
+    filas_html <- list()
+    
+    for (i in 1:nrow(tabla)) {
+      primera_columna <- tags$b(str_to_title(tabla[i, 1]))
+      segunda_columna <-  segunda_columna <- tags$a(href = tabla[i, 2],  primera_columna)
+      fila_html <- tagList(segunda_columna)
+      filas_html <- c(filas_html, fila_html)
+    }
+    
+    contenido_html <- do.call(tagList, filas_html)
+    
+    return(contenido_html)
+  }
+
 # highcharts functions ----------------------------------------------------
 hc_area_date <- function(d, ...){
   d |>
@@ -361,7 +399,7 @@ get_resumen <- function(){
   hoy <- Sys.Date()
   # hacer una logica que si son entre las 1 y 4 AM mirar el dia anterior
   
-  data_noticias <- get_noticias_date_range(hoy - 1, hoy)
+  data_noticias <- get_noticias_date_range(hoy - 5, hoy)
   
   layout_column_wrap(
     width = 1,
@@ -371,26 +409,84 @@ get_resumen <- function(){
       width = 1/3,
       fill = TRUE,
       fillable = TRUE,
-      card(card_header(class = "primary", "A header"),
-           markdown("Some text with a [link](https://github.com).")
+      card(card_header(class = "primary", style = str_glue("background-color:{PARS$color_chart};color:white;"),
+                       tags$p("Las", tags$b("noticias más relevantes hoy"), "son de")),
+           tabla_a_html(get_noticias_categorias(data_noticias) %>% 
+                          head(3), 
+                        PARS$color_chart)
       ),
-      card(card_header(class = "secondary", "A header"),
-           nrow(data_noticias)
+      card(card_header(class = "secondary", style = str_glue("background-color:{PARS$palette[1]};color:white;"), 
+                       tags$p("Los", tags$b("conceptos más frecuentes hoy"), "son")),
+           tabla_a_html(get_noticias_ngram(data_noticias, 3) %>% 
+                          head(3), PARS$palette[1])
       ),
-      card(card_header(class = "primary", "A header"),
-           data_noticias$title[1]
+      card(card_header(class = "primary", style = str_glue("background-color:{PARS$palette[4]};color:white;"),
+                       tags$p("El", tags$b("GS fue mencionado hoy"), "en")),
+           data_noticias %>% 
+             filter(gore == 1) %>% 
+             select(media, url) %>% 
+             head(5) %>% 
+             tabla_a_html_link_web()
       )
     ),
     layout_column_wrap(
-      width = 1/3,
+      style = css(grid_template_columns = "2fr 1fr 1fr"),
       fill = TRUE,
       fillable = TRUE,
-      card(card_header(class = "primary", "A header"),
-           markdown("Some text with a [link](https://github.com).")
+      card(card_header(class = "primary", tags$p("La", tags$b("noticia más comentada"), "es")),
+          tags$p(
+            tags$b(style = str_glue("font-size: large;color:{PARS$palette[4]};"), 
+                   "Cuenta pública 2024: Baja presencia de adherentes marca la llegada de Boric al Congreso"),
+            tags$br(),
+            tags$span(style = "font-size: small;", "Medio: Emol"),
+            tags$span(style = "font-size: small;", "Categorial: Politica")
+          )
       ),
-      card(card_header(class = "secondary", "A header"),
-           nrow(data_noticias)
+      card(card_header(class = "secondary", tags$p("La", tags$b("presencia del GS en noticias"))),
+           tags$p(
+             tags$b(style = str_glue("font-size: large;color:{PARS$palette[1]};"), 
+                    "La última semana ha aumentado en un 21%")
+           )
+      ),
+      card(card_header(class = "secondary", tags$p("La", tags$b("comuna con menos noticias"))),
+           tags$p(
+             tags$b(style = str_glue("font-size: x-large;color:{PARS$palette[1]};"), 
+                    "Lo Prado"),
+             tags$br(),
+             tags$span(style = "font-size: small;", "Sin noticias esta semana")
+           )
       )
+    ),
+    layout_column_wrap(
+      width = 1,
+      card(card_header(class = "primary",  style = str_glue("background-color:{PARS$palette[5]};color:white;"), 
+                       tags$p("La", tags$b("comuna con más noticias hoy"), "es", tags$b("Recoleta"), "con", tags$b("98 noticias"))),
+           layout_column_wrap(
+             width = 1/3,
+             card(
+               tags$p(tags$a(href = "https", data_noticias$title[1]),
+                      tags$br(),
+                      tags$span(style = "font-size: small;", "Medio: Emol"),
+                      tags$span(style = "font-size: small;", "Categorial: Politica")
+                      )
+             ),
+             card(
+               tags$p(tags$a(href = "https", data_noticias$title[2]),
+                      tags$br(),
+                      tags$span(style = "font-size: small;", "Medio: Emol"),
+                      tags$span(style = "font-size: small;", "Categorial: Politica")
+               )
+             ),
+             card(
+               tags$p(tags$a(href = "https", data_noticias$title[3]),
+                      tags$br(),
+                      tags$span(style = "font-size: small;", "Medio: Emol"),
+                      tags$span(style = "font-size: small;", "Categorial: Politica")
+               )
+             )
+           )
+           
+           )
     )
   )
   
