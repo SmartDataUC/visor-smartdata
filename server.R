@@ -52,14 +52,16 @@ server <- function(input, output, session) {
     
     data_noticias_categorias <- get_noticias_categorias(data_noticias)
     
-    cols <- vector_a_colores(valores = data_noticias_categorias$n, 
-                             color_min = PARS$color_gray,
-                             color_max = PARS$color_chart)
-
+    data_noticias_categorias <- data_noticias_categorias |> 
+      mutate(color = vector_a_colores(n, color_min = PARS$color_gray, color_max = PARS$color_chart))
+    
+    dlist <- data_noticias_categorias |> 
+      select(name = categoria, y = n, color) |> 
+      list_parse() 
+    
     highchart() |>
-      # hc_subtitle(text = "Treding Temas") |> 
       hc_add_series(
-        data = data_noticias_categorias$n,
+        data = dlist,
         id = "data",
         type = "bar",
         # color = PARS$color_chart,
@@ -67,7 +69,6 @@ server <- function(input, output, session) {
         colorByPoint = TRUE,
         name = "Noticias por categoría"
       ) |> 
-      hc_colors(cols) |> 
       hc_xAxis(
         categories = data_noticias_categorias$categoria,
         labels = list(
@@ -89,21 +90,22 @@ server <- function(input, output, session) {
     
     data_noticias_ngram <- head(get_noticias_ngram(data_noticias, 1), 10)
     
-    cols <- vector_a_colores(valores = data_noticias_ngram$n, 
-                             color_min = PARS$color_gray,
-                             color_max = PARS$palette[1])
+    data_noticias_ngram <- data_noticias_ngram |> 
+      mutate(color = vector_a_colores(n, color_min = PARS$color_gray, color_max = PARS$palette[1]))
+    
+    dlist <- data_noticias_ngram |> 
+      select(name = ngram, y = n, color) |> 
+      list_parse() 
     
     highchart() |>
-      # hc_subtitle(text = "Top 10 Trending Palabras") |>
       hc_add_series(
-        data = data_noticias_ngram$n,
+        data = dlist,
         id = "data",
         type = "bar",
         color = PARS$color_chart,
         showInLegend = FALSE,
         name = "Conceptos más frecuentes"
       ) |>
-      hc_colors(cols) |> 
       hc_xAxis(categories = data_noticias_ngram$ngram) |>
       hc_plotOptions(
         series = list(
@@ -230,9 +232,22 @@ server <- function(input, output, session) {
     
     if(nrow(data_noticias) == 0) return(TRUE)
     
-    data_noticias_ngram      <- get_noticias_ngram(data_noticias, as.numeric(input$ng))
     data_noticias_categorias <- get_noticias_categorias(data_noticias)
-
+    data_noticias_categorias <- data_noticias_categorias |> 
+      mutate(color = vector_a_colores(n, color_min = PARS$color_gray, color_max = PARS$color_chart))
+    dlist_categorias <- data_noticias_categorias |> 
+      select(name = categoria, y = n, color) |> 
+      list_parse() 
+    
+    data_noticias_ngram <- get_noticias_ngram(data_noticias, as.numeric(input$ng))
+    data_noticias_ngram <- head(data_noticias_ngram, 10)
+    data_noticias_ngram <- data_noticias_ngram |> 
+      mutate(color = vector_a_colores(n, color_min = PARS$color_gray, color_max = PARS$palette[1]))
+    
+    dlist_ngram <- data_noticias_ngram |> 
+      select(name = ngram, y = n, color) |> 
+      list_parse() 
+    
     data_noticias_prescgore  <- data_noticias |>
       group_by(name = categoria) |>
       summarise(value = 100 * mean(as.double(gore))) |>
@@ -257,18 +272,13 @@ server <- function(input, output, session) {
 
     cli::cli_alert_info("observe actualización graficos: graficos")
 
-    c <- highcharter:::fix_1_length_data(data_noticias_categorias$categoria)
-    d <- highcharter:::fix_1_length_data(data_noticias_categorias$n)
-    cols <- vector_a_colores(valores = data_noticias_categorias$n, color_min = PARS$color_gray, color_max = PARS$color_chart)
     highchartProxy("hc_noticiasc") |>
-      hcpxy_update(xAxis = list(categories = c, colors = cols)) |>
-      hcpxy_update_series(id = "data", data =  d)
+      hcpxy_update(xAxis = list(categories = highcharter:::fix_1_length_data(data_noticias_categorias$categoria))) |>
+      hcpxy_update_series(id = "data", data =  dlist_categorias)
     
-    
-    cols <- vector_a_colores(valores = data_noticias_ngram$n, color_min = PARS$color_gray, color_max = PARS$palette[1])
     highchartProxy("hc_conceptos") |>
-      hcpxy_update(xAxis = list(categories = head(data_noticias_ngram$ngram, 10), colors = "red")) |>
-      hcpxy_update_series(id = "data", data =  head(data_noticias_ngram$n, 10))
+      hcpxy_update(xAxis = list(categories = data_noticias_ngram$ngram)) |>
+      hcpxy_update_series(id = "data", data = dlist_ngram)
 
     highchartProxy("hc_gorepresc") |>
       hcpxy_update_series(id = "data", data = data_noticias_prescgore)
@@ -376,25 +386,25 @@ server <- function(input, output, session) {
 
     highchartProxy("hc_conceptos") |> hcpxy_loading(action = "show")
 
-    # data_noticias            <- get_noticias_date_range(input$fecha[1], input$fecha[2], input$categorias)
-    data_noticias            <- data_noticias()
-    data_noticias_ngram      <- get_noticias_ngram(data_noticias, as.numeric(input$ng))
-
-    d <- data_noticias_ngram |> 
-      head(10) |> 
-      mutate(color = vector_a_colores(n, color_min = PARS$color_gray, color_max = PARS$palette[1])) |> 
+    # data_noticias     <- get_noticias_date_range(input$fecha[1], input$fecha[2], input$categorias)
+    data_noticias       <- data_noticias()
+    data_noticias_ngram <- get_noticias_ngram(data_noticias, as.numeric(input$ng))
+    data_noticias_ngram <- head(data_noticias_ngram, 10)
+    data_noticias_ngram <- data_noticias_ngram |> 
+      mutate(color = vector_a_colores(n, color_min = PARS$color_gray, color_max = PARS$palette[1]))
+    
+    dlist <- data_noticias_ngram |> 
       select(name = ngram, y = n, color) |> 
       list_parse() 
     
     highchartProxy("hc_conceptos") |>
-      hcpxy_update(xAxis = list(categories = head(data_noticias_ngram$ngram, 10))) |>
-      hcpxy_update_series(id = "data", data = d)
+      hcpxy_update(xAxis = list(categories = data_noticias_ngram$ngram)) |>
+      hcpxy_update_series(id = "data", data = dlist)
 
     highchartProxy("hc_conceptos") |> hcpxy_loading(action = "hide")
 
   }) |>
     bindEvent(input$ng)
-
 
   # Análisis Modales --------------------------------------------------------
   # modal analisis noticias por categoria

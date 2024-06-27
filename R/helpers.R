@@ -406,6 +406,9 @@ get_ncolors <- function(colors, n){
 }
 
 vector_a_colores <- function(valores, color_min = "gray", color_max = "darkred") {
+  
+  if(length(valores) == 1) return(color_max)
+  
   # Normalizar los valores entre 0 y 1
   valores_norm <- (valores - min(valores)) / (max(valores) - min(valores))
   
