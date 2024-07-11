@@ -593,7 +593,8 @@ server <- function(input, output, session) {
   output$tags_ui <- renderUI({
     trend_terms()         
     t <- trend_terms()
-    c <- viridis::viridis(length(t))
+    # c <- viridis::viridis(length(t))
+    c <- pallete_tendencias(length(t))
     
     # <span class="badge" style="background-color:darkred;color:white;cursor:default">
     #   Escándalo presicendial&nbsp;<i class="fas fa-times-circle" onClick="Shiny.onInputChange('tag_remove', 2)"  style="cursor: pointer;"></i>&nbsp;
@@ -662,7 +663,8 @@ server <- function(input, output, session) {
     data_trend <- data_trend()
     terms      <- isolate(trend_terms())
     
-    c <- viridis::viridis(length(unique(data_trend$term)))
+    # c <- viridis::viridis(length(unique(data_trend$term)))
+    c <- pallete_tendencias(length(unique(data_trend$term)))
     
     data_trend |> 
       count(term, date) |> 
@@ -678,7 +680,8 @@ server <- function(input, output, session) {
     data_trend <- data_trend()
     terms      <- isolate(trend_terms())
     
-    c <- viridis::viridis(length(unique(data_trend$term)))
+    # c <- viridis::viridis(length(unique(data_trend$term)))
+    c <- pallete_tendencias(length(unique(data_trend$term)))
     
     data_trend |> 
       # eliminamos registros ficticioes
