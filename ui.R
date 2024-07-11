@@ -181,6 +181,6 @@ page_navbar(
   )
   # fin ---------------------------------------------------------------------
 ) |> 
-  shinymanager::secure_app(language = "es", theme = smart_theme, enable_admin = TRUE, id = "loginid") |>
+  # shinymanager::secure_app(language = "es", theme = smart_theme, enable_admin = TRUE, id = "loginid") |>
   identity() 
   
