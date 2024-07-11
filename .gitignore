@@ -50,3 +50,4 @@ rsconnect/
 *.pdf
 .Renviron.sh
 data/comunas.gpkg
+db/database.sqlite
