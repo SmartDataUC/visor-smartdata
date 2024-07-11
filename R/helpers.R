@@ -401,6 +401,28 @@ get_resumen <- function(){
   
   data_noticias <- get_noticias_date_range(hoy - 1, hoy)
   
+  dcomentario <- drrss |> 
+    count(caption, sort = TRUE) |> 
+    head(1) |> 
+    pull(caption)
+  
+  
+  dcomunas <- data_noticias |> 
+    mutate(comunas = map(comunas, ~ str_squish(unlist(str_split(.x, "\\,")))))  |> 
+    unnest(comunas) |> 
+    mutate(comunas = str_remove_all(comunas, "\"|\\'|\\[|\\]|\\{|\\}")) |> 
+    filter(comunas != "") |> 
+    count(comunas, sort = TRUE) |> 
+    head(1)
+  
+  data_noticias_comuna <- data_noticias |> 
+    filter(str_detect(comunas, dcomunas$comunas)) |> 
+    head(3)
+  
+  stringr::str_trunc("asda sdas dasd asdasd asd asdasd asd a asdasda dasd asdasd asd asd", 20)
+  
+  
+  
   layout_column_wrap(
     width = 1,
     fill = TRUE,
@@ -435,11 +457,10 @@ get_resumen <- function(){
       fillable = TRUE,
       card(card_header(class = "primary", tags$p("La", tags$b("noticia más comentada"), "es")),
           tags$p(
-            tags$b(style = str_glue("font-size: large;color:{PARS$palette[4]};"), 
-                   "Cuenta pública 2024: Baja presencia de adherentes marca la llegada de Boric al Congreso"),
+            tags$b(style = str_glue("font-size: large;color:{PARS$palette[4]};"), dcomentario),
             tags$br(),
             tags$span(style = "font-size: small;", "Medio: Emol"),
-            tags$span(style = "font-size: small;", "Categorial: Politica")
+            tags$span(style = "font-size: small;", "Categoría: Política")
           )
       ),
       card(card_header(class = "secondary", tags$p("La", tags$b("presencia del GS en noticias"))),
@@ -519,6 +540,26 @@ vector_a_colores <- function(valores, color_min = "gray", color_max = "darkred")
   return(colores)
 }
 
-
+pallete_tendencias <- function(n = 3){
+  
+  df <- tibble(
+    nc = c(1, 2, 3, 4, 5),
+    ids = list(
+      c(1),
+      c(1, 5),
+      c(1, 3, 5),
+      c(1, 3, 4, 5),
+      c(1, 2, 3, 4, 5)
+      )
+  )
+  
+  ids <- df |> 
+    filter(nc == n) |> 
+    pull(ids) |> 
+    unlist()
+  
+  PARS$palette[ids]
+  
+}
 
 
