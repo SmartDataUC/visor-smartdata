@@ -466,10 +466,10 @@ get_resumen <- function(){
       fillable = TRUE,
       card(card_header(class = "primary", tags$p("La", tags$b("noticia más comentada"), "es")),
           tags$p(
-            tags$b(style = str_glue("font-size: large;color:{PARS$palette[4]};"), stringr::str_trunc(dcomentario, 50)),
-            tags$br(),
-            tags$span(style = "font-size: small;", "Medio: Emol"),
-            tags$span(style = "font-size: small;", "Categoría: Política")
+            tags$b(style = str_glue("font-size: large;color:{PARS$palette[4]};"), dcomentario)
+            # tags$br(),
+            # tags$span(style = "font-size: small;", "Medio: Emol"),
+            # tags$span(style = "font-size: small;", "Categoría: Política")
           )
       ),
       card(card_header(class = "secondary", tags$p("La", tags$b("presencia del GS en noticias"))),
