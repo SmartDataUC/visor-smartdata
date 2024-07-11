@@ -415,9 +415,18 @@ get_resumen <- function(){
     count(comunas, sort = TRUE) |> 
     head(1)
   
+  dcomunas_low <- data_noticias |> 
+    mutate(comunas = map(comunas, ~ str_squish(unlist(str_split(.x, "\\,")))))  |> 
+    unnest(comunas) |> 
+    mutate(comunas = str_remove_all(comunas, "\"|\\'|\\[|\\]|\\{|\\}")) |> 
+    filter(comunas != "") |> 
+    count(comunas, sort = TRUE) |> 
+    tail(1)
+  
   data_noticias_comuna <- data_noticias |> 
     filter(str_detect(comunas, dcomunas$comunas)) |> 
     head(3)
+
   
   stringr::str_trunc("asda sdas dasd asdasd asd asdasd asd a asdasda dasd asdasd asd asd", 20)
   
@@ -457,7 +466,7 @@ get_resumen <- function(){
       fillable = TRUE,
       card(card_header(class = "primary", tags$p("La", tags$b("noticia más comentada"), "es")),
           tags$p(
-            tags$b(style = str_glue("font-size: large;color:{PARS$palette[4]};"), dcomentario),
+            tags$b(style = str_glue("font-size: large;color:{PARS$palette[4]};"), stringr::str_trunc(dcomentario, 50)),
             tags$br(),
             tags$span(style = "font-size: small;", "Medio: Emol"),
             tags$span(style = "font-size: small;", "Categoría: Política")
@@ -472,7 +481,7 @@ get_resumen <- function(){
       card(card_header(class = "secondary", tags$p("La", tags$b("comuna con menos noticias"))),
            tags$p(
              tags$b(style = str_glue("font-size: x-large;color:{PARS$palette[1]};"), 
-                    "Lo Prado"),
+                    dcomunas_low$comunas),
              tags$br(),
              tags$span(style = "font-size: small;", "Sin noticias esta semana")
            )
@@ -481,28 +490,28 @@ get_resumen <- function(){
     layout_column_wrap(
       width = 1,
       card(card_header(class = "primary",  style = str_glue("background-color:{PARS$palette[5]};color:white;"), 
-                       tags$p("La", tags$b("comuna con más noticias hoy"), "es", tags$b("Recoleta"), "con", tags$b("98 noticias"))),
+                       tags$p("La", tags$b("comuna con más noticias hoy"), "es", tags$b(dcomunas$comunas), "con", tags$b(paste0(dcomunas$n, " noticias")))),
            layout_column_wrap(
              width = 1/3,
              card(
-               tags$p(tags$a(href = "https", data_noticias$title[1]),
+               tags$p(tags$a(href = data_noticias_comuna[1,]$url, data_noticias_comuna[1,]$title),
                       tags$br(),
-                      tags$span(style = "font-size: small;", "Medio: Emol"),
-                      tags$span(style = "font-size: small;", "Categorial: Politica")
+                      tags$span(style = "font-size: small;", paste0("Medio: ", str_to_title(data_noticias_comuna[1,]$media))),
+                      tags$span(style = "font-size: small;", paste0("Categoria: ", str_to_title(data_noticias_comuna[1,]$categoria)))
                       )
              ),
              card(
-               tags$p(tags$a(href = "https", data_noticias$title[2]),
+               tags$p(tags$a(href = data_noticias_comuna[2,]$url, data_noticias_comuna[2,]$title),
                       tags$br(),
-                      tags$span(style = "font-size: small;", "Medio: Emol"),
-                      tags$span(style = "font-size: small;", "Categorial: Politica")
+                      tags$span(style = "font-size: small;", paste0("Medio: ", str_to_title(data_noticias_comuna[2,]$media))),
+                      tags$span(style = "font-size: small;", paste0("Categoria: ", str_to_title(data_noticias_comuna[2,]$categoria)))
                )
              ),
              card(
-               tags$p(tags$a(href = "https", data_noticias$title[3]),
+               tags$p(tags$a(href = data_noticias_comuna[3,]$url, data_noticias_comuna[3,]$title),
                       tags$br(),
-                      tags$span(style = "font-size: small;", "Medio: Emol"),
-                      tags$span(style = "font-size: small;", "Categorial: Politica")
+                      tags$span(style = "font-size: small;", paste0("Medio: ", str_to_title(data_noticias_comuna[3,]$media))),
+                      tags$span(style = "font-size: small;", paste0("Categoria: ", str_to_title(data_noticias_comuna[3,]$categoria)))
                )
              )
            )
