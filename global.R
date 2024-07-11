@@ -55,6 +55,8 @@ if(!interactive()) {
   onStop(function() { pool::poolClose(pool)})
 }
 
+drrss <- read_csv("data/comentarios_ig_muni_con_fecha.csv")
+
 # theme -------------------------------------------------------------------
 cli::cli_h1("theme")
 smart_theme <- bs_theme(
@@ -155,7 +157,7 @@ options(
       )
     ),
     plotOptions = list(
-      series = list(marker = list(enabled = FALSE))
+      series = list(marker = list(enabled = FALSE), lineWidth = 6)
       )
     )
   )
