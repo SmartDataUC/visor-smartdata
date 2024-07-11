@@ -399,7 +399,7 @@ get_resumen <- function(){
   hoy <- Sys.Date()
   # hacer una logica que si son entre las 1 y 4 AM mirar el dia anterior
   
-  data_noticias <- get_noticias_date_range(hoy - 5, hoy)
+  data_noticias <- get_noticias_date_range(hoy - 1, hoy)
   
   layout_column_wrap(
     width = 1,
