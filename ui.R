@@ -126,30 +126,27 @@ page_navbar(
       )
     ),
   # rrss --------------------------------------------------------------------
-  # nav_panel(
-  #   title = tags$span("Redes Sociales", class = "me-3"),
-  #   icon  = icon("temperature-half"),
-  #   value = "rrss",
-  #   style = "display: none;",
-  #   layout_column_wrap(
-  #     width = 1/2,
-  #     card(
-  #       card_header(tags$span("Posts por fecha", class = "tt")),
-  #       highchartOutput("hc_rrss_fecha")
-  #     ),
-  #     # card(
-  #     #   card_header("Chart 2"),
-  #     #   highchartOutput("hc_rrss_2")
-  #     # ),
-  #     # card(
-  #     #   card_header("Chart 3"),
-  #     #   highchartOutput("hc_rrss_3")
-  #     # ),
-  #     card(card_header(tags$span("Top 100 Contenido con mayor actividad", class = "tt")),
-  #       DT::dataTableOutput("dt_rrss_mas_activos")
-  #     ),
-  #   )
-  # ),
+  nav_panel(
+    title = tags$span("Redes Sociales", class = "me-3"),
+    icon  = icon("temperature-half"),
+    value = "rrss",
+    tabsetPanel(
+      type = "pills",
+      id = "rrssnav",
+      tabPanel(
+        title = tags$span(icon("instagram"), "Instragram"),
+        layout_column_wrap(
+          width = 1,
+        )
+      ),
+      tabPanel(
+        title = tags$span(icon("facebook"), "Facebook"),
+        layout_column_wrap(
+          width = 1,
+        )
+      )
+    )
+  ),
   # acerca de ---------------------------------------------------------------
   nav_panel(
     title = tags$span("Acerca de", class = "me-3"),
@@ -181,6 +178,6 @@ page_navbar(
   )
   # fin ---------------------------------------------------------------------
 ) |> 
-  shinymanager::secure_app(language = "es", theme = smart_theme, enable_admin = TRUE, id = "loginid") |>
+  # shinymanager::secure_app(language = "es", theme = smart_theme, enable_admin = TRUE, id = "loginid") |>
   identity() 
   
