@@ -19,9 +19,23 @@ library(dbplyr)
 library(pool)
 library(RPostgres)
 library(markdown)
+library(readxl)
+library(jsonlite)
+library(purrr)
+library(quanteda)
+library(quanteda.textplots)
 loadNamespace("dbplyr")
 
 source("R/helpers.R")
+
+# helpers tabular
+source("R/tabular/helpers-red-usuarios-hashtags.R")
+source("R/tabular/helpers_busqueda-libre.R")
+source("R/tabular/helpers_busqueda-topico.R")
+source("R/tabular/helpers_importar-tablas.R")
+source("R/tabular/helpers_likes-comments-shares.R")
+source("R/tabular/helpers_sentimiento.R")
+
 
 # parameters --------------------------------------------------------------
 cli::cli_h1("parameters")
@@ -55,7 +69,7 @@ if(!interactive()) {
   onStop(function() { pool::poolClose(pool)})
 }
 
-drrss <- read_csv("data/comentarios_ig_muni_con_fecha.csv")
+# drrss <- read_csv("data/comentarios_ig_muni_con_fecha.csv")
 
 # theme -------------------------------------------------------------------
 cli::cli_h1("theme")
