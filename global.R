@@ -87,6 +87,7 @@ smart_theme <- bs_theme(
   "popover-max-width" = "400px"
 ) |> 
   bs_add_rules("#medionav { @extend .justify-content-center }") |> 
+  bs_add_rules("#rrssnav { @extend .justify-content-center }") |>
   bs_add_rules(".nav-pills  { padding: 1rem !important;}")
 
 # bslib::bs_theme_preview(smart_theme)
