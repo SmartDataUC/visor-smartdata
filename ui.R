@@ -137,6 +137,30 @@ page_navbar(
         title = tags$span(icon("instagram"), "Instragram"),
         layout_column_wrap(
           width = 1,
+          layout_column_wrap(
+            width = 1/2,
+            card(
+              card_header(
+                tags$span("Posts por fecha", class = "tt"),
+              ),
+              highchartOutput("rrss_insta_post_fecha")
+            ),
+            card(
+              card_header(
+                tags$span("Relaciones por Coocurrencia de Hashtags", class =  "tt")
+              ),
+              plotOutput("rrss_insta_hashtags")
+            )
+          )
+        ),
+        layout_column_wrap(
+          width = 1,
+          card(
+            card_header(
+              tags$span("Top 100 Posts Más Activos", class = "tt"),
+            ),
+            DT::dataTableOutput("rrss_insta_post_activos")
+          )
         )
       ),
       tabPanel(

@@ -479,8 +479,61 @@ server <- function(input, output, session) {
   #   } else {
   #     sidebar_toggle(id = "sidebar", open = TRUE)
   #   }
-  # }) |>
+  # }) |
   #   bindEvent(input$mainnav)
+  
+  
+  dinst <- reactive({
+    dinst <- get_tabla_instagram(input$fecha[1], input$fecha[2], comuna = input$comunas)
+    dinst
+  })
+  
+  # dinstcommnets <- reactive({
+  #   get_tabla_insta_gore(input$fecha[1], input$fecha[2] - days(500)) |> 
+  #     filter(date == max(date))
+  # 
+  #   
+  #   dinstcommnets <- get_comments_instagram(input$fecha[1], input$fecha[2], comuna = input$comunas)
+  #   dinstcommnets
+  # })
+  # 
+  output$rrss_insta_post_fecha <- renderHighchart({
+    dinst <- dinst()
+    dinst |> 
+      count(fecha = date, name = "cantidad") |> 
+      hchart("line", hcaes(fecha, cantidad), color = PARS$color_chart, name = "Posts por fecha")
+  })
+  
+  output$rrss_insta_hashtags <- renderPlot({
+    dinst <- dinst()
+    create_dfm(dinst) |>
+      get_top_hashtags() |>
+      # as.igraph() |> igraph::plot.igraph()
+      quanteda.textplots::textplot_network(vertex_color = PARS$palette[1], edge_color = PARS$palette[2])
+  })
+  
+  output$rrss_insta_post_activos <- DT::renderDataTable({
+    dinst <- dinst()
+    
+    dinst |>
+      filter(!is.na(caption)) |>
+      arrange(desc(80*comments + 20*likes)) |> 
+      head(100) |>
+      mutate(
+        caption = str_squish(caption),
+        caption = str_glue("<a href=\"{url}\" target=\"_blank\">{str_trunc(caption, 40)}</a>"),
+        # date = as.Date(date)
+        hace_dias = map_chr(date, diffdate2, d2 = Sys.Date()),
+        fecha = str_glue("{date} (hace {hace_dias})"),
+        fecha = str_remove(fecha, "\\.")
+      ) |> 
+      select(Usuario = user, Comuna = comuna, Contenido = caption, Fecha = fecha, "\u2764" = likes, "&#128488;" = comments) |>
+      datatable() |> 
+      formatCurrency(c(5, 6),currency = "", interval = 3, mark = ".", digits  = 0)
+
+  })
+  
+  
   
   # output$hc_rrss_fecha <- renderHighchart({
   # 
@@ -513,30 +566,7 @@ server <- function(input, output, session) {
   #   
   # })
   
-  # output$dt_rrss_mas_activos <- DT::renderDataTable({
-  #   
-  #   drrhh |>
-  #     arrange(desc(likesCount + commentsCount)) |> 
-  #     arrange(desc(commentsCount)) |> 
-  #     mutate(
-  #       caption = str_squish(caption),
-  #       caption = str_glue("<a href=\"{url}\" target=\"_blank\">{str_trunc(caption, 40)}</a>"),
-  #       date = lubridate::floor_date(timestamp, "day"),
-  #       date = as.Date(date)
-  #       ) |>
-  #     filter(!is.na(caption)) |> 
-  #     head(100) |> 
-  #     select(Contenido = caption, Fecha = date, "\u2764" = likesCount, "&#128488;" = commentsCount) |> 
-  #     mutate(
-  #       Hace = map_chr(Fecha, diffdate2, d2 = Sys.Date()),
-  #       Hace = str_remove(Hace, "\\."),
-  #       .after = Fecha
-  #       ) |> 
-  #     datatable() |> 
-  #     formatCurrency(c(4, 5),currency = "", interval = 3, mark = ".", digits  = 0)
-  #   
-  # })
-  
+ 
   # Tendencias --------------------------------------------------------------
   trend_terms <- reactiveVal(c())
   
