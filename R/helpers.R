@@ -2,7 +2,7 @@
 get_noticias_date_range <- function(d1, d2, categorias = NULL, comunas = NULL){
 
   # d1 <- Sys.Date() - days(1)
-  # d2 <- Sys.Date() - days(100)
+  # d2 <- Sys.Date() - days(10)
   # categorias <- NULL
   # comunas <- NULL
 

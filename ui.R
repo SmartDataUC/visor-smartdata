@@ -135,7 +135,7 @@ page_navbar(
           width = "100%"
         ),
         uiOutput("tags_ui"),
-        shinyjs::disabled(shiny::actionButton("term_go", "Analizar", icon = icon("search"))),
+        # shinyjs::disabled(shiny::actionButton("term_go", "Analizar", icon = icon("search"))),
         
         layout_column_wrap(
           fillable = TRUE,

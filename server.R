@@ -602,10 +602,14 @@ server <- function(input, output, session) {
 
   })
   
-  
- 
   # Tendencias --------------------------------------------------------------
-  trend_terms <- reactiveVal(c())
+  # para tendecias colocaremos de ejemplo las dos conceptos mas frecuentes
+  trend_terms <- reactiveVal(
+    get_noticias_date_range(Sys.Date(), Sys.Date() - 2) |> 
+      get_noticias_ngram(1) |> 
+      pull(1) |> 
+      head(3)
+  )
   
   # observador, que agrega términos a la comparacion cuando se hace enter o click
   # en el searchInput
@@ -720,15 +724,16 @@ server <- function(input, output, session) {
   
     data_trend
       
-  }) |> 
-    bindEvent(input$term_go)
+  }) # |> bindEvent(input$term_go)
   
   output$trend_hc1 <- renderHighchart({
     
-    shinyjs::disable(id = "term_go")
-    
+    # shinyjs::disable(id = "term_go")
+    terms      <- trend_terms()
+    if(length(terms) == 0) return(highchart() |> hc_title(text = "Agregue términos de búsqueda"))
+     
     data_trend <- data_trend()
-    terms      <- isolate(trend_terms())
+   
     
     # c <- viridis::viridis(length(unique(data_trend$term)))
     c <- pallete_tendencias(length(unique(data_trend$term)))
@@ -744,8 +749,10 @@ server <- function(input, output, session) {
   
   output$trend_hc2 <- renderHighchart({
     
+    terms      <- trend_terms()
+    if(length(terms) == 0) return(highchart() |> hc_title(text = "Agregue términos de búsqueda"))
+    
     data_trend <- data_trend()
-    terms      <- isolate(trend_terms())
     
     # c <- viridis::viridis(length(unique(data_trend$term)))
     c <- pallete_tendencias(length(unique(data_trend$term)))
