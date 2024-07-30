@@ -24,6 +24,7 @@ library(jsonlite)
 library(purrr)
 library(quanteda)
 library(quanteda.textplots)
+library(ngram)
 loadNamespace("dbplyr")
 
 source("R/helpers.R")
@@ -159,7 +160,7 @@ options(
       align = "left",
       style = list(
         fontFamily = PARS$base_font,
-        fontWeight = "bold",
+        # fontWeight = "bold",
         color = PARS$fg
       )
     ),
@@ -167,7 +168,7 @@ options(
       align = "left",
       style = list(
         fontFamily = PARS$base_font,
-        fontWeight = "bold",
+        # fontWeight = "bold",
         color = PARS$fg
       )
     ),
@@ -188,10 +189,14 @@ mindate <- tbl(pool, "news") |>
   as.Date()
 
 opts_categorias <- tbl(pool, "news") |> 
-  filter(gore == 1) |> 
+  # filter(gore == 1) |> 
   count(categoria = category_1, sort = TRUE) |> 
   collect() |> 
-  pull(categoria)
+  pull(categoria) |> 
+  na.omit()
+
+# tbl(pool, "news") |> filter(is.na(category_1)) |> count()
+# tbl(pool, "news") |> count(category_1) |> collect()
 
 opts_categorias <- set_names(opts_categorias, str_to_title(opts_categorias))
 
@@ -283,7 +288,14 @@ datatable <- purrr::partial(
     )
   )
 
-
+withSpinner <- purrr::partial(
+  shinycssloaders::withSpinner,
+  type = 2,
+  color.background = "white", #PARS$color_gray,
+  size = 1.5,
+  color = PARS$color_chart
+  )
+  
 # users -------------------------------------------------------------------
 if(!file.exists(PARS$slqlite_path)){
   credentials <- readxl::read_excel("data/users.xlsx")

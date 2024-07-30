@@ -64,25 +64,40 @@ get_noticias_ngram <- function(data_noticias, ng = 3){
   
   if(nrow(data_noticias) == 0) return(tibble(ngram = "", n = 0))
     
-  data_noticias_ngram <- data_noticias |> 
-    unnest_tokens(ngram, body, token = "ngrams", n = ng) |> 
-    count(ngram, sort = TRUE)
+  # res <- bench::mark(check = FALSE, {
+  #   data_noticias_ngram <- data_noticias |>
+  #     filter(map_dbl(body, function(x) {
+  #       x |> str_extract_all(" ") |> unlist() |> length()
+  #     }) >= 3) |>
+  #     tidytext::unnest_tokens(ngram, body, token = "ngrams", n = ng) |>
+  #     count(ngram, sort = TRUE)
+  # }, {
+  #   data_noticias_ngram2 <- data_noticias |>
+  #     filter(map_dbl(body, function(x) {
+  #       x |> str_extract_all(" ") |> unlist() |> length()
+  #     }) >= 3) |>
+  #     pull(body) |>
+  #     ngram::ngram(n = ng) |>
+  #     ngram::get.phrasetable() |>
+  #     as_tibble()
+  # })
+  # res
+  # autoplot(res)
+
+  data_noticias_ngram <- data_noticias |>
+    filter(map_dbl(body, function(x) {
+      x |> str_extract_all(" ") |> unlist() |> length()
+    }) >= ng) |>
+    pull(body) |>
+    ngram::ngram(n = ng) |>
+    ngram::get.phrasetable() |>
+    as_tibble() |> 
+    # para dejarlo como version original
+    set_names(c("ngram", "n", "prop")) |> 
+    mutate(ngram = str_squish(ngram))
   
-  # data_noticias |> 
-  #   mutate(body2 = str_remove_all(body, stopwords_es_2))
-  
-  # for(i in 1:ng){
-  #   cli::cli_inform("running get_noticias_ngram: removing stopwods in {i} space, nrow {nrow(data_noticias_ngram)}")
-  #   # data_noticias_ngram |>
-  #   #   mutate(w = word(ngram, start = 1L))
-  #   # data_noticias_ngram <- ""
-  # 
-  #   data_noticias_ngram <- data_noticias_ngram |>
-  #     filter(!word(ngram, start = i) %in% stopwords_es)
-  # 
-  # }
-  # 
-  data_noticias_ngram
+  data_noticias_ngram |> 
+    filter(n > 5)
   
 }
 

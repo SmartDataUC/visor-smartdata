@@ -92,24 +92,24 @@ page_navbar(
         title = tags$span(icon("map-location-dot"), "Comunas"),
         layout_column_wrap(
           width = 1,
-          card(leafletOutput("map")),
+          card(leafletOutput("map") |> withSpinner()),
           ),
         layout_column_wrap(
           width = 1/2,
           card(
             card_header(tags$span(tags$span("Tendencia Histórica", class = "tt"))),
-            highchartOutput("comunas_tend")
+            highchartOutput("comunas_tend") |> withSpinner()
             ),
           card(
             card_header(tags$span(tags$span("Conceptos más frecuentes", class = "tt"))),
-            highchartOutput("comunas_conc")
+            highchartOutput("comunas_conc") |> withSpinner()
             ),
           ),
         layout_column_wrap(
           width = 1,
           card(
             card_header(tags$span(tags$span("Noticias en donde se identifica la presencia de la comuna", class = "tt"))),
-            DT::dataTableOutput("comunas_tbl")
+            DT::dataTableOutput("comunas_tbl") |> withSpinner()
             )
           )
         ),
@@ -136,21 +136,16 @@ page_navbar(
         ),
         uiOutput("tags_ui"),
         # shinyjs::disabled(shiny::actionButton("term_go", "Analizar", icon = icon("search"))),
-        
         layout_column_wrap(
           fillable = TRUE,
           width = 1/2,
-          
           card(
             card_header(tags$span("Tendencia temporal", class = "tt")),
-            # min_heigth = 300,
-            # withSpinner(
-            highchartOutput("trend_hc1")
-            # )
+            highchartOutput("trend_hc1") |> withSpinner()
           ),
           card(
             card_header(tags$span("Cantidad de Menciones del Término en Artículos Noticiosos", class = "tt")),
-            highchartOutput("trend_hc2")
+            highchartOutput("trend_hc2") |> withSpinner()
             )
           )
         )
@@ -174,13 +169,13 @@ page_navbar(
               card_header(
                 tags$span("Posts por fecha", class = "tt"),
               ),
-              highchartOutput("rrss_insta_post_fecha")
+              highchartOutput("rrss_insta_post_fecha") |> withSpinner()
             ),
             card(
               card_header(
                 tags$span("Relaciones por Coocurrencia de Hashtags", class =  "tt")
               ),
-              plotOutput("rrss_insta_hashtags")
+              plotOutput("rrss_insta_hashtags") |> withSpinner()
             )
           )
         ),
@@ -190,7 +185,7 @@ page_navbar(
             card_header(
               tags$span("Top 100 Posts Más Activos", class = "tt"),
             ),
-            DT::dataTableOutput("rrss_insta_post_activos")
+            DT::dataTableOutput("rrss_insta_post_activos") |> withSpinner()
           )
         )
       ),

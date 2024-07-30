@@ -1,5 +1,5 @@
 # input <- list(
-#   categorias = c("economia", "salud"),
+#   categorias = c("Economía", "Salud"),
 #   tiempo     = 24 * 1,
 #   fecha      = c(Sys.Date() - days(6), Sys.Date()),
 #   ngram      = 2,
@@ -553,8 +553,27 @@ server <- function(input, output, session) {
   
   
   dinst <- reactive({
-    dinst <- get_tabla_instagram(input$fecha[1], input$fecha[2], comuna = input$comunas)
+    
+    cli::cli_inform("reactive `dinst`")
+    
+    dinst1 <- get_tabla_instagram(input$fecha[1], input$fecha[2], comuna = input$comunas)
+    
+    if(is.null(input$categorias)) {
+      dinst <- dinst1
+      return(dinst)
+    }
+    
+    dinst <- map_df(input$categorias, function(cat = "Saluds"){
+      if(is.null(lista_palabras_clave[[cat]])) return(tibble())
+      search_keywords(dinst1, cat) |> mutate(categoria = cat)
+    })
+  
+    dinst <- dinst |> 
+      # por si una publicacion esta en 2 o mas categorias
+      distinct(caption, .keep_all = TRUE)
+      
     dinst
+    
   })
   
   # dinstcommnets <- reactive({
@@ -567,7 +586,11 @@ server <- function(input, output, session) {
   # })
   # 
   output$rrss_insta_post_fecha <- renderHighchart({
+
     dinst <- dinst()
+    
+    if(nrow(dinst) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
+    
     dinst |> 
       count(fecha = date, name = "cantidad") |> 
       hchart("line", hcaes(fecha, cantidad), color = PARS$color_chart, name = "Posts por fecha")
@@ -575,6 +598,9 @@ server <- function(input, output, session) {
   
   output$rrss_insta_hashtags <- renderPlot({
     dinst <- dinst()
+    
+    if(nrow(dinst) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
+    
     create_dfm(dinst) |>
       get_top_hashtags() |>
       # as.igraph() |> igraph::plot.igraph()
