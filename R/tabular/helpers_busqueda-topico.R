@@ -19,7 +19,7 @@ search_keywords <- function(data, category, ignore_case = TRUE) {
   
   search_result <- data |> 
     filter(str_detect(caption, regex(pattern, ignore_case = ignore_case))) |> 
-    select(any_of(c("date", "comuna", "user", "caption", "url", "comments", "likes", "shares"))) |> 
+    select(any_of(c("id", "date", "comuna", "user", "caption", "url", "comments", "likes", "shares"))) |> 
     mutate(caption = str_squish(caption))
   
   return(search_result)
