@@ -161,37 +161,35 @@ server <- function(input, output, session) {
   output$hc_prcepcion <- renderHighchart({
     data_noticias <- isolate(data_noticias())
 
-    data_noticias_gorepresc <- data_noticias |>
-      mutate(sentiment = coalesce(sentiment, "NEU")) |>
-      count(date, sentiment) |>
+    data_noticias_prcp <- data_noticias |>
+      mutate(date = as_date(date)) |> 
+      count(date, semaforo) |> 
+      complete(date, semaforo, fill = list(n = 0)) |> 
       mutate(
-        sentiment = case_when(
-          sentiment == "NEU" ~ "Neutral",
-          sentiment == "NEG" ~ "Negativo",
-          TRUE               ~ "Positivo"
-        ),
-        sentiment = factor(sentiment, levels = c("Negativo", "Neutral", "Positivo"))
-      ) |>
-      complete(date, sentiment, fill = list(n = 0))
-
-    data_noticias_gorepresc
-
-    highchart() |>
-      hc_colors(PARS$palette) |>
-      hc_xAxis(type = "datetime") |>
-      hc_add_series(
-        data = data_noticias_gorepresc,
-        hcaes(date, n, group = sentiment),
-        type = "area",
-        stacking = "normal"
-      ) |>
-      hc_tooltip(table = TRUE, sort = TRUE) |> 
-      hc_plotOptions(
-        series = list(
-          cursor = "pointer",
-          events = list(click = JS("function(event){ Shiny.onInputChange('modal_percepcion', {'percp': this.name, '.nonce': Math.random()}) }"))
-          )
+        semaforo = if_else(semaforo == 1, "Negativo", "Positivo/Neutro"),
+        semaforo = factor(semaforo, levels = c("Negativo", "Positivo/Neutro"))
         )
+    
+    data_noticias_prcp
+    
+    hchart(
+      data_noticias_prcp,
+      "area", 
+      hcaes(date, n, group = semaforo),
+      color = c(PARS$palette[1], PARS$palette[5]),
+      id = c("neg", "posneu"),
+      stacking = "normal"
+    ) |> 
+      hc_tooltip(table = TRUE) |> 
+      hc_xAxis(title = list(text = "Fecha")) |> 
+      hc_yAxis(title = list(text = "Cantidad"))
+
+      # hc_plotOptions(
+      #   series = list(
+      #     cursor = "pointer",
+      #     events = list(click = JS("function(event){ Shiny.onInputChange('modal_percepcion', {'percp': this.name, '.nonce': Math.random()}) }"))
+      #     )
+      #   )
 
   })
   
@@ -214,7 +212,7 @@ server <- function(input, output, session) {
   #   }) |>
   #   debounce(2000)
 
-  # observeEvent para actualizar los 3 primeros graficos
+  # observeEvent para actualizar los 4 primeros graficos
   observe({
     
     cli::cli_alert_info("observe actualización graficos")
@@ -254,18 +252,14 @@ server <- function(input, output, session) {
       arrange(desc(value)) |>
       highcharter::list_parse()
 
-    data_noticias_gorepresc <- data_noticias |>
-      mutate(sentiment = coalesce(sentiment, "NEU")) |>
-      count(date, sentiment) |>
+    data_noticias_prcp <- data_noticias |>
+      mutate(date = as_date(date)) |> 
+      count(date, semaforo) |> 
+      complete(date, semaforo, fill = list(n = 0)) |> 
       mutate(
-        sentiment = case_when(
-          sentiment == "NEU" ~ "Neutral",
-          sentiment == "NEG" ~ "Negativo",
-          TRUE               ~ "Positivo"
-        ),
-        sentiment = factor(sentiment, levels = c("Negativo", "Neutral", "Positivo"))
-      ) |>
-      complete(date, sentiment, fill = list(n = 0))
+        semaforo = if_else(semaforo == 1, "Negativo", "Positivo/Neutro"),
+        semaforo = factor(semaforo, levels = c("Negativo", "Positivo/Neutro"))
+      )
 
     # glimpse(data_noticias_prescgore)
     # glimpse(data_noticias_gorepresc)
@@ -286,8 +280,8 @@ server <- function(input, output, session) {
     highchartProxy("hc_prcepcion") |>
       hcpxy_set_data(
         type = "area",
-        data = data_noticias_gorepresc,
-        hcaes(date, n, group = sentiment),
+        data = data_noticias_prcp,
+        hcaes(date, n, group = semaforo),
         redraw = TRUE
       )
 
@@ -302,17 +296,44 @@ server <- function(input, output, session) {
   }) |>
     bindEvent(input$fecha, input$categorias, input$comunas)
   
+  # observe para ngrama conceptos
+  observe({
+    
+    highchartProxy("hc_conceptos") |> hcpxy_loading(action = "show")
+    
+    # data_noticias     <- get_noticias_date_range(input$fecha[1], input$fecha[2], input$categorias)
+    data_noticias       <- data_noticias()
+    data_noticias_ngram <- get_noticias_ngram(data_noticias, as.numeric(input$ng))
+    data_noticias_ngram <- head(data_noticias_ngram, 10)
+    data_noticias_ngram <- data_noticias_ngram |> 
+      mutate(color = vector_a_colores(n, color_min = PARS$color_gray, color_max = PARS$palette[1]))
+    
+    dlist <- data_noticias_ngram |> 
+      select(name = ngram, y = n, color) |> 
+      list_parse() 
+    
+    highchartProxy("hc_conceptos") |>
+      hcpxy_update(xAxis = list(categories = data_noticias_ngram$ngram)) |>
+      hcpxy_update_series(id = "data", data = dlist)
+    
+    highchartProxy("hc_conceptos") |> hcpxy_loading(action = "hide")
+    
+  }) |>
+    bindEvent(input$ng)  
+  
   # r <- reactive({
   #   invalidateLater(1000)
   #   runif(1)
   #   })
   
+  # comunas -----------------------------------------------------------------
   # mismo event que el de los graficos, pero para separar las logicas
   observe({
     cli::cli_alert_info("observe del mapa: inicio")
     
-    data_noticias            <- data_noticias()
+    data_noticias <- data_noticias()
     
+    # noticias con solamente comunas
     dgeo <- data_noticias |>
       count(categoria, comunas) |> 
       mutate(comunas = map(comunas, ~ str_squish(unlist(str_split(.x, "\\,"))))) |> 
@@ -333,7 +354,12 @@ server <- function(input, output, session) {
     # cols <- sort(PARS$palette)
     cols <- c(PARS$color_gray, PARS$color_chart)
     colorData <- dgeo[["n"]]
-    pal  <- colorBin(cols, colorData, 7, pretty = TRUE, na.color = PARS$color_gray)
+    pal  <- colorBin(cols, 
+                     colorData, 7,
+                     pretty = TRUE,
+                     # na.color = PARS$color_gray,
+                     na.color = "transparent"
+                     )
     
     # m <- leaflet() |> addTiles()
     m <- leafletProxy("map")
@@ -344,17 +370,17 @@ server <- function(input, output, session) {
       leaflet::addPolygons(
         data             = dgeo,
         fillColor        = ~ pal(colorData),
-        weight           = .5,
+        weight           = .75,
         dashArray        = "3",
         stroke           = NULL,
-        fillOpacity      = 0.7,
+        fillOpacity      = 0.5,
         layerId          = ~ id,
         # popup            = popp,
         label            =  ~ str_glue("{comuna}: {nf} noticias."),
         highlightOptions = highlightOptions(
           color        = "white",
           weight       = 2,
-          fillColor    = PARS$color_chart,
+          fillColor    = PARS$palette[1],
           bringToFront = TRUE
         ),
         labelOptions = labelOptions(
@@ -381,15 +407,28 @@ server <- function(input, output, session) {
 
   }) |>
     bindEvent(input$fecha, input$categorias, input$comunas, input$medionav) 
-
-  observe({
-
-    highchartProxy("hc_conceptos") |> hcpxy_loading(action = "show")
-
-    # data_noticias     <- get_noticias_date_range(input$fecha[1], input$fecha[2], input$categorias)
-    data_noticias       <- data_noticias()
-    data_noticias_ngram <- get_noticias_ngram(data_noticias, as.numeric(input$ng))
-    data_noticias_ngram <- head(data_noticias_ngram, 10)
+  
+  # solamente noticias con comunas 
+  data_noticias_comuna <- reactive({
+    data_noticias <- data_noticias()
+    data_noticias_comuna <- data_noticias |> 
+      filter(comunas != "")
+    data_noticias_comuna
+  })
+  
+  output$comunas_tend <- renderHighchart({
+    data_noticias_comuna <- data_noticias_comuna()
+    
+    data_noticias_comuna |> 
+      count(Fecha = date, name = "Cantidad") |> 
+      hchart("line", hcaes(Fecha, Cantidad), color = PARS$color_chart, name = "Noticias con comunas descritas")
+    
+  })
+  
+  output$comunas_conc <- renderHighchart({
+    data_noticias_comuna <- data_noticias_comuna()
+    data_noticias_ngram <- head(get_noticias_ngram(data_noticias_comuna, 1), 10)
+    
     data_noticias_ngram <- data_noticias_ngram |> 
       mutate(color = vector_a_colores(n, color_min = PARS$color_gray, color_max = PARS$palette[1]))
     
@@ -397,14 +436,44 @@ server <- function(input, output, session) {
       select(name = ngram, y = n, color) |> 
       list_parse() 
     
-    highchartProxy("hc_conceptos") |>
-      hcpxy_update(xAxis = list(categories = data_noticias_ngram$ngram)) |>
-      hcpxy_update_series(id = "data", data = dlist)
-
-    highchartProxy("hc_conceptos") |> hcpxy_loading(action = "hide")
-
-  }) |>
-    bindEvent(input$ng)
+    highchart() |>
+      hc_add_series(
+        data = dlist,
+        id = "data",
+        type = "bar",
+        color = PARS$color_chart,
+        showInLegend = FALSE,
+        name = "Conceptos más frecuentes en noticias con comunas"
+      ) |>
+      hc_xAxis(categories = data_noticias_ngram$ngram) |>
+      hc_plotOptions(
+        series = list(
+          cursor = "pointer",
+          point = list(events = list(click = JS("function(){ Shiny.onInputChange('modal_conceptos_term', {'term': this.category, '.nonce': Math.random()}) }")))
+        )
+      )
+    
+  })
+  
+  output$comunas_tbl <- renderDataTable({
+    data_noticias_comuna <- data_noticias_comuna()
+    
+    data_noticias_comuna |>
+      # filter(!is.na(title)) |>
+      # arrange(desc(80*comments + 20*likes)) |> 
+      # head(100) |>
+      mutate(
+        title = str_squish(title),
+        title = str_glue("<a href=\"{url}\" target=\"_blank\">{str_trunc(title, 40)}</a>"),
+        # date = as.Date(date)
+        hace_dias = map_chr(date, diffdate2, d2 = Sys.Date()),
+        fecha = str_glue("{date} (hace {hace_dias})"),
+        fecha = str_remove(fecha, "\\.")
+      ) |> 
+      select(Titular = title, Comunas = comunas, `Categoría` = categoria, Fecha = fecha) |>
+      datatable()
+    
+  })
 
   # Análisis Modales --------------------------------------------------------
   # modal analisis noticias por categoria
@@ -458,14 +527,14 @@ server <- function(input, output, session) {
   # modal analisis comuna
   observe({
     cli::cli_inform("observe input$map_shape_click: {input$map_shape_click}")
-    
+
     print(input$map_shape_click)
-    
+
     comunaid <- input$map_shape_click$id
     data_noticias <- data_noticias()
-    
+
     showModal(reporte_comuna(data_noticias, comunaid))
-    
+
   }) |>
     bindEvent(input$map_shape_click)
   
@@ -533,38 +602,6 @@ server <- function(input, output, session) {
 
   })
   
-  
-  
-  # output$hc_rrss_fecha <- renderHighchart({
-  # 
-  #   drrhh |> 
-  #     mutate(
-  #       day = lubridate::floor_date(timestamp, "month"),
-  #       day = as.Date(day)
-  #       ) |> 
-  #     count(day, categoria) |> 
-  #     hchart(type = "area", hcaes(day, n, group = categoria), stacking = "normal") |> 
-  #     hc_chart(zoomType = "x") |> 
-  #     hc_colors(PARS$palette[c(1, 5)])|> 
-  #     hc_xAxis(title = "") |>
-  #     hc_yAxis(title = "")
-  #   
-  # })
-  
-  # output$hc_rrss_terminos <- renderHighchart({
-  # 
-  #   drrhh |> 
-  #     filter(!is.na(commentsAll)) |>
-  #     select(commentsAll) |> 
-  #     unnest_tokens(ngram, commentsAll, token = "ngrams", n = 1) |> 
-  #     count(ngram, sort = TRUE) |> 
-  #     filter(!ngram %in% stopwords_es) |>
-  #     filter(!str_detect(ngram, "^[0-9]+$")) |> 
-  #     filter(!str_detect(ngram, "_nc_")) |> 
-  #     View()
-  #   
-  #   
-  # })
   
  
   # Tendencias --------------------------------------------------------------
