@@ -215,7 +215,7 @@ tabla_a_html_link_web <- function(tabla) {
     
     for (i in 1:nrow(tabla)) {
       primera_columna <- tags$b(str_to_title(tabla[i, 1]))
-      segunda_columna <-  segunda_columna <- tags$a(href = tabla[i, 2],  primera_columna)
+      segunda_columna <-  segunda_columna <- tags$a(href = tabla[i, 2],  primera_columna, target = "blank")
       fila_html <- tagList(segunda_columna)
       filas_html <- c(filas_html, fila_html)
     }
@@ -397,15 +397,62 @@ reporte_comuna <- function(data_noticias, comunaid = "pudahuel", ng = 1){
 get_resumen <- function(){
   
   hoy <- Sys.Date()
+  hr <- as.integer(str_sub(Sys.time(), 12, 13))
+  
+  h2 <- hoy
+  
+  if (hr <= 4) {
+    h1 <- hoy -1
+  } else {
+    h1 <- hoy
+  }
+  
   # hacer una logica que si son entre las 1 y 4 AM mirar el dia anterior
   
-  data_noticias <- get_noticias_date_range(hoy - 1, hoy)
+  data_noticias <- get_noticias_date_range(h1, h2)
   
-  dcomentario <- drrss |> 
-    count(caption, sort = TRUE) |> 
-    head(1) |> 
-    pull(caption)
+  total_noticias <- nrow(data_noticias)
   
+  noticias_gore <- data_noticias %>% 
+    filter(gore == 1) %>% 
+    nrow()
+  
+  presencia_gore <- percent(noticias_gore / total_noticias)
+  
+  text_foot_presencia <- paste0(total_noticias,  " noticias en total")
+  
+  dinst <- get_tabla_instagram(h1, h2)
+  
+  # dcomentario <- drrss |> 
+  #   count(caption, sort = TRUE) |> 
+  #   head(1) |> 
+  #   pull(caption)
+  
+  dpost_mas_comentado <- dinst %>% 
+    filter(comments == max(comments)) %>% 
+    head(1)
+  
+  catg_post_mas_comentado <- lista_palabras_clave |> 
+    names() |> 
+    map(function(nm = "Medioambiente"){
+      
+      dout <- search_keywords(dpost_mas_comentado, nm) 
+      
+      if(nrow(dout) > 0) return(nm) else NA
+      
+    }) |> 
+    unlist() |> 
+    na.omit() |> 
+    as.character()
+  
+  catg_post_mas_comentado <- catg_post_mas_comentado[1]
+  # catg_post_mas_comentado <-"Medioambiente"
+  
+  if (is.na(catg_post_mas_comentado)){
+    catg_post_mas_comentado <- "Sin Categoría"
+  } else {
+    catg_post_mas_comentado <- paste0("Categoría: ", catg_post_mas_comentado)
+  }
   
   dcomunas <- data_noticias |> 
     mutate(comunas = map(comunas, ~ str_squish(unlist(str_split(.x, "\\,")))))  |> 
@@ -423,13 +470,15 @@ get_resumen <- function(){
     count(comunas, sort = TRUE) |> 
     tail(1)
   
+  if (dcomunas_low$n > 1) {
+    n_comunas_low <- paste0(dcomunas_low$n, " noticias")
+  } else {
+    n_comunas_low <- paste0(dcomunas_low$n, " noticia")
+  }
+  
   data_noticias_comuna <- data_noticias |> 
     filter(str_detect(comunas, dcomunas$comunas)) |> 
     head(3)
-
-  
-  stringr::str_trunc("asda sdas dasd asdasd asd asdasd asd a asdasda dasd asdasd asd asd", 20)
-  
   
   
   layout_column_wrap(
@@ -441,82 +490,85 @@ get_resumen <- function(){
       fill = TRUE,
       fillable = TRUE,
       card(card_header(class = "primary", style = str_glue("background-color:{PARS$color_chart};color:white;"),
-                       tags$p("Las", tags$b("noticias más relevantes hoy"), "son de")),
+                       tags$span("Las", tags$b("noticias más relevantes hoy"), "son de")),
            tabla_a_html(get_noticias_categorias(data_noticias) %>% 
                           head(3), 
                         PARS$color_chart)
       ),
       card(card_header(class = "secondary", style = str_glue("background-color:{PARS$palette[1]};color:white;"), 
-                       tags$p("Los", tags$b("conceptos más frecuentes hoy"), "son")),
+                       tags$span("Los", tags$b("conceptos más frecuentes hoy"), "son")),
            tabla_a_html(get_noticias_ngram(data_noticias, 3) %>% 
                           head(3), PARS$palette[1])
       ),
       card(card_header(class = "primary", style = str_glue("background-color:{PARS$palette[4]};color:white;"),
-                       tags$p("El", tags$b("GS fue mencionado hoy"), "en")),
+                       tags$span("El", tags$b("GS fue mencionado hoy"), "en")),
            data_noticias %>% 
              filter(gore == 1) %>% 
              select(media, url) %>% 
              head(5) %>% 
              tabla_a_html_link_web()
       )
-    ),
+    ), 
     layout_column_wrap(
       style = css(grid_template_columns = "2fr 1fr 1fr"),
       fill = TRUE,
       fillable = TRUE,
-      card(card_header(class = "primary", tags$p("La", tags$b("noticia más comentada"), "es")),
-          tags$p(
-            tags$b(style = str_glue("font-size: large;color:{PARS$palette[4]};"), dcomentario)
-            # tags$br(),
-            # tags$span(style = "font-size: small;", "Medio: Emol"),
-            # tags$span(style = "font-size: small;", "Categoría: Política")
+      card(max_height = 250, card_header(class = "primary", tags$span("El ", tags$b("post más comentado"), "es")),
+          tags$span(style = str_glue("font-size: medium;color:{PARS$palette[4]};"), dpost_mas_comentado$caption),
+          card_footer(
+            tags$span(style = "font-size: small;", paste0("Medio: @", dpost_mas_comentado$user), ",  "),
+            tags$span(style = "font-size: small;", catg_post_mas_comentado), 
+            tags$span(style = "font-size: small;", paste0(", ", "💬: ", dpost_mas_comentado$comments))
           )
       ),
-      card(card_header(class = "secondary", tags$p("La", tags$b("presencia del GS en noticias"))),
-           tags$p(
-             tags$b(style = str_glue("font-size: large;color:{PARS$palette[1]};"), 
-                    "La última semana ha aumentado en un 21%")
-           )
+      card(max_height = 250, card_header(class = "secondary", tags$span("La", tags$b("presencia del GS en noticias"))),
+           tags$span(
+             tags$b(style = str_glue("font-size: xx-large;color:{PARS$palette[1]};"), 
+                   paste0("Es de un ", presencia_gore, " en las últimas 24 hrs"))
+           ),
+           card_footer(text_foot_presencia)
       ),
-      card(card_header(class = "secondary", tags$p("La", tags$b("comuna con menos noticias"))),
-           tags$p(
-             tags$b(style = str_glue("font-size: x-large;color:{PARS$palette[1]};"), 
-                    dcomunas_low$comunas),
-             tags$br(),
-             tags$span(style = "font-size: small;", "Sin noticias esta semana")
-           )
+      card(max_height = 250, card_header(class = "secondary", tags$span("La", tags$b("comuna con menos noticias"))),
+           card_body(style = "text-align: center;",
+             tags$span(
+               tags$b(style = str_glue("font-size: xx-large;color:{PARS$palette[1]};"), 
+                      dcomunas_low$comunas)
+               # tags$br()
+               
+             )
+           ),
+           card_footer(tags$span(style = "font-size: small;", n_comunas_low))
       )
     ),
     layout_column_wrap(
       width = 1,
       card(card_header(class = "primary",  style = str_glue("background-color:{PARS$palette[5]};color:white;"), 
-                       tags$p("La", tags$b("comuna con más noticias hoy"), "es", tags$b(dcomunas$comunas), "con", tags$b(paste0(dcomunas$n, " noticias")))),
+                       tags$span("La", tags$b("comuna con más noticias hoy"), "es", tags$span(dcomunas$comunas), "con", tags$b(paste0(dcomunas$n, " noticias")))),
            layout_column_wrap(
              width = 1/3,
              card(
-               tags$p(tags$a(href = data_noticias_comuna[1,]$url, data_noticias_comuna[1,]$title),
-                      tags$br(),
-                      tags$span(style = "font-size: small;", paste0("Medio: ", str_to_title(data_noticias_comuna[1,]$media))),
-                      tags$span(style = "font-size: small;", paste0("Categoria: ", str_to_title(data_noticias_comuna[1,]$categoria)))
-                      )
-             ),
-             card(
-               tags$p(tags$a(href = data_noticias_comuna[2,]$url, data_noticias_comuna[2,]$title),
-                      tags$br(),
-                      tags$span(style = "font-size: small;", paste0("Medio: ", str_to_title(data_noticias_comuna[2,]$media))),
-                      tags$span(style = "font-size: small;", paste0("Categoria: ", str_to_title(data_noticias_comuna[2,]$categoria)))
+               tags$span(tags$a(href = data_noticias_comuna[1,]$url, data_noticias_comuna[1,]$title, target = "blank")),
+               card_footer(
+                 tags$span(style = "font-size: small;", paste0("Medio: ", str_to_title(data_noticias_comuna[1,]$media), ", ")),
+                 tags$span(style = "font-size: small;", paste0("Categoria: ", str_to_title(data_noticias_comuna[1,]$categoria)))
                )
              ),
              card(
-               tags$p(tags$a(href = data_noticias_comuna[3,]$url, data_noticias_comuna[3,]$title),
-                      tags$br(),
-                      tags$span(style = "font-size: small;", paste0("Medio: ", str_to_title(data_noticias_comuna[3,]$media))),
-                      tags$span(style = "font-size: small;", paste0("Categoria: ", str_to_title(data_noticias_comuna[3,]$categoria)))
+               tags$span(tags$a(href = data_noticias_comuna[2,]$url, data_noticias_comuna[2,]$title, target = "blank")),
+               card_footer(
+                 tags$span(style = "font-size: small;", paste0("Medio: ", str_to_title(data_noticias_comuna[2,]$media), ", ")),
+                 tags$span(style = "font-size: small;", paste0("Categoria: ", str_to_title(data_noticias_comuna[2,]$categoria)))
+               )
+             ),
+             card(
+               tags$span(tags$a(href = data_noticias_comuna[3,]$url, data_noticias_comuna[3,]$title, target = "blank")),
+               card_footer(
+                 tags$span(style = "font-size: small;", paste0("Medio: ", str_to_title(data_noticias_comuna[3,]$media), ", ")),
+                 tags$span(style = "font-size: small;", paste0("Categoria: ", str_to_title(data_noticias_comuna[3,]$categoria)))
                )
              )
            )
-           
-           )
+        )
     )
   )
   
