@@ -64,26 +64,39 @@ get_noticias_ngram <- function(data_noticias, ng = 3){
   
   if(nrow(data_noticias) == 0) return(tibble(ngram = "", n = 0))
     
-  # res <- bench::mark(check = FALSE, {
-  #   data_noticias_ngram <- data_noticias |>
-  #     filter(map_dbl(body, function(x) {
-  #       x |> str_extract_all(" ") |> unlist() |> length()
-  #     }) >= 3) |>
-  #     tidytext::unnest_tokens(ngram, body, token = "ngrams", n = ng) |>
-  #     count(ngram, sort = TRUE)
-  # }, {
-  #   data_noticias_ngram2 <- data_noticias |>
-  #     filter(map_dbl(body, function(x) {
-  #       x |> str_extract_all(" ") |> unlist() |> length()
-  #     }) >= 3) |>
-  #     pull(body) |>
-  #     ngram::ngram(n = ng) |>
-  #     ngram::get.phrasetable() |>
-  #     as_tibble()
+  # res <- bench::mark(
+  #   check = FALSE,
+  #   min_iterations = 5,
+  #   max_iterations = 10,
+  #   tidytext = {
+  #     data_noticias_ngram_1 <- data_noticias |>
+  #       # filter(map_dbl(body, function(x) { x |> str_extract_all(" ") |> unlist() |> length() }) >= ng) |>
+  #       tidytext::unnest_tokens(ngram, body, token = "ngrams", n = ng) |>
+  #       count(ngram, sort = TRUE)
+  #   }, 
+  #   quanteda = {
+  #     data_noticias_ngram_2 <- data_noticias |> 
+  #       corpus(text_field = "body") |> 
+  #       tokens() |> 
+  #       tokens_ngrams(n = ng, concatenator = " ") |> 
+  #       dfm() |> 
+  #       quanteda.textstats::textstat_frequency()
+  #     },
+  #   ngram = {
+  #     data_noticias_ngram_3 <- data_noticias |>
+  #       filter(map_dbl(body, function(x) { x |> str_extract_all(" ") |> unlist() |> length() }) >= ng) |>
+  #       pull(body) |>
+  #       ngram::ngram(n = ng) |>
+  #       ngram::get.phrasetable() |>
+  #       as_tibble()
   # })
+  # 
   # res
   # autoplot(res)
-
+  # data_noticias_ngram_1
+  # data_noticias_ngram_2 |> as_tibble()
+  # data_noticias_ngram_3
+  
   data_noticias_ngram <- data_noticias |>
     filter(map_dbl(body, function(x) {
       x |> str_extract_all(" ") |> unlist() |> length()
