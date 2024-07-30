@@ -429,6 +429,7 @@ get_resumen <- function(){
   #   pull(caption)
   
   dpost_mas_comentado <- dinst %>% 
+    mutate(comments = as.integer(comments)) %>% 
     filter(comments == max(comments)) %>% 
     head(1)
   
