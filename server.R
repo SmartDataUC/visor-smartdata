@@ -730,7 +730,7 @@ server <- function(input, output, session) {
     
     # shinyjs::disable(id = "term_go")
     terms      <- trend_terms()
-    if(length(terms) == 0) return(highchart() |> hc_title(text = "Agregue términos de búsqueda"))
+    if(length(terms) == 0) return(highchart() |> hc_subtitle(text = "Agregue términos de búsqueda"))
      
     data_trend <- data_trend()
    
@@ -743,14 +743,16 @@ server <- function(input, output, session) {
       complete(term, date, fill = list(n = 0)) |> 
       hchart(hcaes(date, n, group = term), type = "line") |> 
       hc_tooltip(table = TRUE, sort = TRUE) |> 
-      hc_colors(c)
+      hc_colors(c) |> 
+      hc_xAxis(title = list(text = "Fecha")) |> 
+      hc_yAxis(title = list(text = "Cantidad"))
     
   })
   
   output$trend_hc2 <- renderHighchart({
     
     terms      <- trend_terms()
-    if(length(terms) == 0) return(highchart() |> hc_title(text = "Agregue términos de búsqueda"))
+    if(length(terms) == 0) return(highchart() |> hc_subtitle(text = "Agregue términos de búsqueda"))
     
     data_trend <- data_trend()
     
@@ -763,8 +765,10 @@ server <- function(input, output, session) {
       group_by(term, .drop = FALSE) |> 
       count() |>  
       ungroup() |> 
-      hchart(hcaes(term, n), type = "column", colorByPoint = TRUE) |> 
-      hc_colors(c)
+      hchart(hcaes(term, n), type = "column", colorByPoint = TRUE, name = "Cantidad de Menciones del Término") |> 
+      hc_colors(c) |> 
+      hc_xAxis(title = list(text = "Término")) |> 
+      hc_yAxis(title = list(text = "Cantidad"))
     
   })
   

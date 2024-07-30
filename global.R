@@ -158,7 +158,7 @@ options(
     title = list(
       align = "left",
       style = list(
-        fontFamily = PARS$heading_font,
+        fontFamily = PARS$base_font,
         fontWeight = "bold",
         color = PARS$fg
       )
@@ -166,7 +166,7 @@ options(
     subtitle = list(
       align = "left",
       style = list(
-        fontFamily = PARS$heading_font,
+        fontFamily = PARS$base_font,
         fontWeight = "bold",
         color = PARS$fg
       )

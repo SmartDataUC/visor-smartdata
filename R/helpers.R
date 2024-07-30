@@ -287,7 +287,7 @@ reporte_noticias_categoria <- function(data_noticias, categ){
       width = NULL, height = 250, fill = FALSE,
       style = htmltools::css(grid_template_columns = "6fr 6fr"),
       card(card_header(tags$span("Tendencia histórica", class = "tt"))    , hc1),
-      card(card_header(tags$span("Distribución de medios", class = "tt")), hc2)
+      card(card_header(tags$span("Distribución por Categorías", class = "tt")), hc2)
     ),
     card(card_header(tags$span("Noticias de la categoría", class = "tt")), doutdt, height = "350px")
   )
