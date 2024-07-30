@@ -421,7 +421,7 @@ get_resumen <- function(){
   
   text_foot_presencia <- paste0(total_noticias,  " noticias en total")
   
-  dinst <- get_tabla_instagram(h1, h2)
+  dinst <- get_tabla_instagram(h1-1, h2)
   
   # dcomentario <- drrss |> 
   #   count(caption, sort = TRUE) |> 
