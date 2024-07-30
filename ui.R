@@ -32,37 +32,34 @@ page_navbar(
       tabPanel(
         title = tags$span(icon("newspaper"), "Categoría"),
         layout_column_wrap(
-          width = 1,
-          layout_column_wrap(
-            width = 1/2,
-            card(
-              card_header(
-                tags$span("Noticias por categoría", class = "tt"),
+          width = 1/2,
+          card(
+            card_header(
+              tags$span("Noticias por categoría", class = "tt"),
+              popover(
+                bs_icon("info-circle"),
+                title = "Noticias por categoría",
+                "Este gráfico de barras representa la distribución de las noticias publicadas en los medios de acuerdo con su categoría, ordenadas de mayor a menor. Si posiciona el cursor por encima de las barras del gráfico, podrá visualizar el número de noticias publicadas en cada categoría."
+                ),
+              ),
+            highchartOutput("hc_noticiasc")
+            ),
+          card(
+            card_header(
+              tags$span(
+                tags$span("Conceptos más frecuentes", class = "tt"),
                 popover(
                   bs_icon("info-circle"),
-                  title = "Noticias por categoría",
-                  "Este gráfico de barras representa la distribución de las noticias publicadas en los medios de acuerdo con su categoría, ordenadas de mayor a menor. Si posiciona el cursor por encima de las barras del gráfico, podrá visualizar el número de noticias publicadas en cada categoría."
-                ),
-              ),
-              highchartOutput("hc_noticiasc")
-            ),
-            card(
-              card_header(
-                tags$span(
-                  tags$span("Conceptos más frecuentes", class = "tt"),
-                  popover(
-                    bs_icon("info-circle"),
-                    title = "Conceptos más frecuentes",
-                    "Este gráfico de barras representa los 10 conceptos más frecuentes en las noticias analizadas, ordenadas de mayor a menor. En la parte superior izquierda del gráfico, puede ajustar la cantidad de palabras que conforman los conceptos, pudiendo elegir conceptos simples de una palabra o conceptos compuestos de dos o más palabras. Si posiciona el cursor por encima de las barras del gráfico, podrá visualizar el número de conceptos presentes en las noticias analizadas. Si pulsa la barra del gráfico, una nueva ventana le presentará un análisis más detallado del concepto en las noticias analizadas incluyendo: (1) la tendencia histórica del concepto; (2) su distribución en las noticias analizadas de acuerdo con sus categorías; y (3) una tabla con las noticias donde se encuentra presente dicho concepto."
+                  title = "Conceptos más frecuentes",
+                  "Este gráfico de barras representa los 10 conceptos más frecuentes en las noticias analizadas, ordenadas de mayor a menor. En la parte superior izquierda del gráfico, puede ajustar la cantidad de palabras que conforman los conceptos, pudiendo elegir conceptos simples de una palabra o conceptos compuestos de dos o más palabras. Si posiciona el cursor por encima de las barras del gráfico, podrá visualizar el número de conceptos presentes en las noticias analizadas. Si pulsa la barra del gráfico, una nueva ventana le presentará un análisis más detallado del concepto en las noticias analizadas incluyendo: (1) la tendencia histórica del concepto; (2) su distribución en las noticias analizadas de acuerdo con sus categorías; y (3) una tabla con las noticias donde se encuentra presente dicho concepto."
                   )
                 ),
-                # tags$span(),
-                tags$small(radioButtons("ng", NULL, c("Una palabra" = 1, "Dos palabras" =  2, "Tres palabras" = 3), inline = TRUE)),
-                class = "d-flex justify-content-between align-items-center"
+              # tags$span(),
+              tags$small(radioButtons("ng", NULL, c("Una palabra" = 1, "Dos palabras" =  2, "Tres palabras" = 3), inline = TRUE)),
+              class = "d-flex justify-content-between align-items-center"
               ),
-              highchartOutput("hc_conceptos")
-            )
-          ),
+            highchartOutput("hc_conceptos")
+            ),
           card(
             card_header(
               tags$span(
@@ -71,16 +68,50 @@ page_navbar(
                   bs_icon("info-circle"),
                   title = "Presencia GORE en noticias",
                   "Este gráfico de burbujas agrupadas representa la distribución de noticias publicadas en los medios que hagan referencia al Gobierno Regional de Santiago o al Gobernador Regional. Las noticias son presentadas por categoría de noticia. Cada burbuja representa una categoría, siendo su tamaño proporcional respecto a su presencia en el grupo de noticias, siendo la burbuja más grande el tema en donde más se hace referencia al Gobierno Regional de Santiago o al Gobernado Regional para el periodo analizado."
+                  )
                 )
-              )
-            ),
+              ),
             highchartOutput("hc_gorepresc")
+            ),
+          card(
+            card_header(
+              tags$span(
+                tags$span("Percepción de noticias", class = "tt"),
+                popover(
+                  bs_icon("info-circle"),
+                  title = "Hechos noticiosos",
+                  "Texto sobre Hechos noticiosos"
+                  )
+                )
+              ),
+            highchartOutput("hc_prcepcion")
+            )
           )
-        )
-      ),
+        ),
       tabPanel(
         title = tags$span(icon("map-location-dot"), "Comunas"),
-        card(leafletOutput("map"))
+        layout_column_wrap(
+          width = 1,
+          card(leafletOutput("map")),
+          ),
+        layout_column_wrap(
+          width = 1/2,
+          card(
+            card_header(tags$span(tags$span("Tendencia Histórica", class = "tt"))),
+            highchartOutput("comunas_tend")
+            ),
+          card(
+            card_header(tags$span(tags$span("Conceptos más frecuentes", class = "tt"))),
+            highchartOutput("comunas_conc")
+            ),
+          ),
+        layout_column_wrap(
+          width = 1,
+          card(
+            card_header(tags$span(tags$span("Noticias en donde se identifica la presencia de la comuna", class = "tt"))),
+            DT::dataTableOutput("comunas_tbl")
+            )
+          )
         ),
       tabPanel(
         title = tags$span(icon("arrow-trend-up"), "Tendencias"),

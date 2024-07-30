@@ -27,5 +27,4 @@ search_keywords <- function(data, category, ignore_case = TRUE) {
 
 # search_keywords(data_facebook, "Educación") 
 # search_keywords(data_instagram, "Seguridad") 
-# search_keywords(data_instagram_gore, "Medioambiente") 
-
+# search_keywords(data_instagram_gore, "Medioambiente")
