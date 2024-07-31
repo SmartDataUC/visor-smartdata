@@ -699,7 +699,7 @@ server <- function(input, output, session) {
   })
   
   #Facebook
-  # 
+  
   # dfacebook <- reactive({
   #   
   #   cli::cli_inform("reactive `dfacebook`")
@@ -707,58 +707,49 @@ server <- function(input, output, session) {
   #   dfacebook1 <- get_tabla_facebook(input$fecha[1], input$fecha[2], comuna = input$comuna)
   #   
   #   if(is.null(input$categorias)) {
-  #     dinst <- dinst1
-  #     return(dinst)
+  #     dfacebook <- dfacebook1
+  #     return(dfacebook)
   #   }
   #   
-  #   dinst <- map_df(input$categorias, function(cat = "Saluds"){
+  #   dfacebook <- map_df(input$categorias, function(cat = "Saluds"){
   #     if(is.null(lista_palabras_clave[[cat]])) return(tibble())
   #     search_keywords(dinst1, cat) |> mutate(categoria = cat)
   #   })
   #   
-  #   dinst <- dinst |> 
+  #   dfacebook <- dfacebook |> 
   #     # por si una publicacion esta en 2 o mas categorias
   #     distinct(caption, .keep_all = TRUE)
   #   
-  #   dinst
+  #   dfacebook
   #   
   # })
   # 
-  # # dinstcommnets <- reactive({
-  # #   get_tabla_insta_gore(input$fecha[1], input$fecha[2] - days(500)) |> 
-  # #     filter(date == max(date))
-  # # 
-  # #   
-  # #   dinstcommnets <- get_comments_instagram(input$fecha[1], input$fecha[2], comuna = input$comunas)
-  # #   dinstcommnets
-  # # })
-  # # 
-  # output$rrss_insta_post_fecha <- renderHighchart({
+  # output$rrss_facebook_post_fecha <- renderHighchart({
   #   
-  #   dinst <- dinst()
+  #   dfacebook <- dfacebook()
   #   
-  #   if(nrow(dinst) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
+  #   if(nrow(dfacebook) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
   #   
-  #   dinst |> 
+  #   dfacebook |> 
   #     count(fecha = date, name = "cantidad") |> 
   #     hchart("line", hcaes(fecha, cantidad), color = PARS$color_chart, name = "Posts por fecha")
   # })
   # 
-  # output$rrss_insta_hashtags <- renderPlot({
-  #   dinst <- dinst()
+  # output$rrss_facebook_hashtags <- renderPlot({
+  #   dfacebook <- dfacebook()
   #   
-  #   if(nrow(dinst) == 0) return(plot.new())
+  #   if(nrow(dfacebook) == 0) return(plot.new())
   #   
-  #   create_dfm(dinst) |>
+  #   create_dfm(dfacebook) |>
   #     get_top_hashtags() |>
   #     # as.igraph() |> igraph::plot.igraph()
   #     quanteda.textplots::textplot_network(vertex_color = PARS$palette[1], edge_color = PARS$palette[2])
   # })
   # 
-  # output$rrss_insta_post_activos <- DT::renderDataTable({
-  #   dinst <- dinst()
+  # output$rrss_facebook_post_activos <- DT::renderDataTable({
+  #   dfacebook <- dfacebook()
   #   
-  #   dinst |>
+  #   dfacebook |>
   #     filter(!is.na(caption)) |>
   #     arrange(desc(80*comments + 20*likes)) |> 
   #     head(100) |>
