@@ -24,6 +24,7 @@ library(jsonlite)
 library(purrr)
 library(quanteda)
 library(quanteda.textplots)
+library(quanteda.textstats)
 library(ngram)
 loadNamespace("dbplyr")
 
