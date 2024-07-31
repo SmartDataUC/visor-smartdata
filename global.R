@@ -9,6 +9,7 @@ library(highcharter)
 library(shinyWidgets)
 library(shinyjs)
 library(shinycssloaders)
+library(shinycustomloader)
 library(DT)
 library(bsicons)
 library(scales)
@@ -290,11 +291,19 @@ datatable <- purrr::partial(
   )
 
 withSpinner <- purrr::partial(
-  shinycssloaders::withSpinner,
-  type = 2,
-  color.background = "white", #PARS$color_gray,
-  size = 1.5,
-  color = PARS$color_chart
+  base::identity
+  # 
+  # shinycustomloader::withLoader,
+  # loader = "loader1",
+  # proxy.height = "100%"
+  # 
+  # shinycssloaders::withSpinner,
+  # type = 2,
+  # color.background = "white", #PARS$color_gray,
+  # size = 1.5,
+  # # proxy.height = "100%",
+  # color = PARS$color_chart
+  #
   )
   
 # users -------------------------------------------------------------------

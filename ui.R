@@ -109,7 +109,7 @@ page_navbar(
           width = 1,
           card(
             card_header(tags$span(tags$span("Noticias en donde se identifica la presencia de la comuna", class = "tt"))),
-            DT::dataTableOutput("comunas_tbl") |> withSpinner()
+            DT::dataTableOutput("comunas_tbl", height = "400px") |> withSpinner()
             )
           )
         ),
@@ -160,7 +160,7 @@ page_navbar(
       type = "pills",
       id = "rrssnav",
       tabPanel(
-        title = tags$span(icon("instagram"), "Instragram"),
+        title = tags$span(icon("instagram"), "Instagram"),
         layout_column_wrap(
           width = 1,
           layout_column_wrap(
@@ -169,7 +169,7 @@ page_navbar(
               card_header(
                 tags$span("Posts por fecha", class = "tt"),
               ),
-              highchartOutput("rrss_insta_post_fecha") |> withSpinner()
+              highchartOutput("rrss_insta_post_fecha") # |> withSpinner()
             ),
             card(
               card_header(
@@ -185,12 +185,27 @@ page_navbar(
             card_header(
               tags$span("Top 100 Posts Más Activos", class = "tt"),
             ),
-            DT::dataTableOutput("rrss_insta_post_activos") |> withSpinner()
+            DT::dataTableOutput("rrss_insta_post_activos", height = "400px") |> withSpinner()
+          )
+        ),
+        layout_column_wrap(
+          width = 1/2,
+          card(
+            card_header(
+              tags$span("Sentimientos posts", class = "tt"),
+            ),
+            highchartOutput("rrss_insta_sent_posts") |> withSpinner()
+          ),
+          card(
+            card_header(
+              tags$span("Sentimientos comentarios", class =  "tt")
+            ),
+            highchartOutput("rrss_insta_sent_comments") |> withSpinner()
           )
         )
       ),
       tabPanel(
-        title = tags$span(icon("instagram"), "Instragram GORE"),
+        title = tags$span(icon("instagram"), "Instagram GORE"),
         layout_column_wrap(
           width = 1,
           layout_column_wrap(
@@ -215,7 +230,22 @@ page_navbar(
             card_header(
               tags$span("Top 100 Posts Más Activos", class = "tt"),
             ),
-            DT::dataTableOutput("rrss_insta_gore_post_activos") |> withSpinner()
+            DT::dataTableOutput("rrss_insta_gore_post_activos", height = "400px") |> withSpinner()
+          )
+        ),
+        layout_column_wrap(
+          width = 1/2,
+          card(
+            card_header(
+              tags$span("Sentimientos posts", class = "tt"),
+            ),
+            highchartOutput("rrss_insta_gore_sent_posts") |> withSpinner()
+          ),
+          card(
+            card_header(
+              tags$span("Sentimientos comentarios", class =  "tt")
+            ),
+            highchartOutput("rrss_insta_gore_sent_comments") |> withSpinner()
           )
         )
       ),
@@ -223,14 +253,38 @@ page_navbar(
         title = tags$span(icon("facebook"), "Facebook"),
         layout_column_wrap(
           width = 1,
+          layout_column_wrap(
+            width = 1/2,
+            card(
+              card_header(
+                tags$span("Posts por fecha", class = "tt"),
+              ),
+              highchartOutput("rrss_facebook_post_fecha") |> withSpinner()
+            ),
+            card(
+              card_header(
+                tags$span("Relaciones por Coocurrencia de Hashtags", class =  "tt")
+              ),
+              plotOutput("rrss_facebook_hashtags") |> withSpinner()
+            )
+          )
+        ),
+        layout_column_wrap(
+          width = 1,
+          card(
+            card_header(
+              tags$span("Top 100 Posts Más Activos", class = "tt"),
+            ),
+            DT::dataTableOutput("rrss_facebook_post_activos", height = "400px") |> withSpinner()
+          )
         )
       ),
-      tabPanel(
-        title = tags$span(icon("search"), "Búsqueda en RRSS"),
-        layout_column_wrap(
-          width = 1, textInput("rrss_search", "termino a buscar")
-        )
-      )
+      # tabPanel(
+      #   title = tags$span(icon("search"), "Búsqueda en RRSS"),
+      #   layout_column_wrap(
+      #     width = 1, textInput("rrss_search", "termino a buscar")
+      #   )
+      # )
     )
   ),
   # acerca de ---------------------------------------------------------------

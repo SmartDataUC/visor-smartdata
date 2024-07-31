@@ -114,23 +114,24 @@ get_tabla_facebook <- function(d1, d2, comuna = NULL){
   
   fb_munis_sentimiento <- tbl(pool, "facebook_municipalidades_publicaciones__copy") |>
     filter(d1 <= as_date(time), as_date(time) <= d2) |> 
-    select(id, sentimiento, negativo = NEG, neutro = NEU, positivo = POS) |> 
-    distinct(id, .keep_all = TRUE) |>
+    select(post_id = postId, sentimiento, negativo = NEG, neutro = NEU, positivo = POS) |> 
+    distinct(post_id, .keep_all = TRUE) |>
     collect() |>
-    mutate(id = as.character(suppressWarnings(as.numeric(id))))
+    mutate(post_id = as.character(suppressWarnings(as.numeric(post_id))))
   
-  data_facebook <- suppressMessages(left_join(data_facebook, fb_munis_sentimiento))
+  data_facebook<- suppressMessages(left_join(data_facebook, fb_munis_sentimiento))
+  
   
   fb_munis_comentarios_sentimientos <- tbl(pool, "facebook_municipalidades_comentarios__copy") |> 
     filter(d1 <= as_date(time), as_date(time) <= d2) |> 
-    select(id, comment_text, sentimiento, negativo = NEG, neutro = NEU, positivo = POS) |> 
+    select(post_id = postId, comment_text, sentimiento, negativo = NEG, neutro = NEU, positivo = POS) |> 
     distinct(comment_text, .keep_all = TRUE) |> 
     collect() |> 
-    mutate(id = as.character(suppressWarnings(as.numeric(id)))) |> 
+    mutate(post_id = as.character(suppressWarnings(as.numeric(post_id)))) |> 
     summarise(comentarios_negativos = mean(negativo, na.rm = TRUE),
               comentarios_neutros = mean(neutro, na.rm = TRUE),
               comentarios_positivos = mean(positivo, na.rm = TRUE),
-              .by = id)
+              .by = post_id)
   
   data_facebook <- suppressMessages(left_join(data_facebook, fb_munis_comentarios_sentimientos))
   

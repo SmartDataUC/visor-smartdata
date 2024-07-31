@@ -550,9 +550,8 @@ server <- function(input, output, session) {
   #   }
   # }) |
   #   bindEvent(input$mainnav)
-  
-  # Instagram 
-  
+
+  # RRSS Instagram ----------------------------------------------------------
   dinst <- reactive({
     
     cli::cli_inform("reactive `dinst`")
@@ -577,15 +576,6 @@ server <- function(input, output, session) {
     
   })
   
-  # dinstcommnets <- reactive({
-  #   get_tabla_insta_gore(input$fecha[1], input$fecha[2] - days(500)) |> 
-  #     filter(date == max(date))
-  # 
-  #   
-  #   dinstcommnets <- get_comments_instagram(input$fecha[1], input$fecha[2], comuna = input$comunas)
-  #   dinstcommnets
-  # })
-  # 
   output$rrss_insta_post_fecha <- renderHighchart({
 
     dinst <- dinst()
@@ -623,64 +613,99 @@ server <- function(input, output, session) {
         fecha = str_glue("{date} (hace {hace_dias})"),
         fecha = str_remove(fecha, "\\.")
       ) |> 
-      select(Usuario = user, Comuna = comuna, Contenido = caption, Fecha = fecha, "\u2764" = likes, "&#128488;" = comments) |>
+      select(Usuario = user, Comuna = comuna, Contenido = caption, Fecha = fecha, "\u2764" = likes, "&#128488;" = comments,
+             "&#128488; pos." = comentarios_positivos, "&#128488; neg." = comentarios_negativos) |>
       datatable() |> 
-      formatCurrency(c(5, 6),currency = "", interval = 3, mark = ".", digits  = 0)
+      formatCurrency(c(5, 6),currency = "", interval = 3, mark = ".", digits  = 0) |> 
+      formatPercentage(c(7, 8))
 
   })
   
-  #Instagram Gore
+  output$rrss_insta_sent_posts <- renderHighchart({
+    dinst <- dinst()
+    
+    if(nrow(dinst) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
+    
+    dinst |> 
+      group_by(fecha = date) |> 
+      summarise(across(c(negativo, positivo, neutro), ~ 100 * round(mean(.x, na.rm = TRUE), 4))) |> 
+      pivot_longer(cols = -c(fecha), names_to = "sent") |>
+      filter(!is.na(value)) |>
+      mutate(sent = factor(sent, levels = c("positivo", "neutro", "negativo"))) |> 
+      hchart("line", hcaes(fecha, value, group = sent), color = c(PARS$palette[5], PARS$color_gray,  PARS$palette[1])) |> 
+      hc_tooltip(valueDecimals = 2, table = TRUE, sort = TRUE)
+    
+  })
   
+  output$rrss_insta_sent_comments <- renderHighchart({
+    dinst <- dinst()
+    
+    if(nrow(dinst) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
+    
+    dinst |> 
+      group_by(fecha = date) |> 
+      summarise(across(c(comentarios_negativos, comentarios_neutros, comentarios_positivos), ~ 100 * round(mean(.x, na.rm = TRUE), 4))) |> 
+      pivot_longer(cols = -c(fecha), names_to = "sent") |>
+      filter(!is.na(value)) |> 
+      mutate(
+        sent = str_replace(sent, "_", " "),
+        sent = factor(sent, levels = c("comentarios positivos", "comentarios neutros", "comentarios negativos"))
+        ) |> 
+      hchart("line", hcaes(fecha, value, group = sent), color = c(PARS$palette[5], PARS$color_gray,  PARS$palette[1])) |> 
+      hc_tooltip(valueDecimals = 2, table = TRUE, sort = TRUE)
+    
+    
+  })
+  
+  # Instagram GORE ----------------------------------------------------------
   dinst_gore <- reactive({
+    cli::cli_inform("reactive `dinst_gore`")
     
-    cli::cli_inform("reactive `dinst`")
-    
-    dinst1 <- get_tabla_insta_gore(input$fecha[1] - 30, input$fecha[2])
+    dinst_gore1 <- get_tabla_insta_gore(input$fecha[1] - 30, input$fecha[2])
     
     if(is.null(input$categorias)) {
-      dinst <- dinst1
-      return(dinst)
+      dinst_gore <- dinst_gore1
+      return(dinst_gore)
     }
     
-    dinst <- map_df(input$categorias, function(cat = "Saluds"){
+    dinst_gore <- map_df(input$categorias, function(cat = "Saluds"){
       if(is.null(lista_palabras_clave[[cat]])) return(tibble())
       search_keywords(dinst1, cat) |> mutate(categoria = cat)
     })
     
-    dinst <- dinst |> 
+    dinst_gore <- dinst_gore |> 
       # por si una publicacion esta en 2 o mas categorias
       distinct(caption, .keep_all = TRUE)
     
-    dinst
+    dinst_gore
     
   })
   
   output$rrss_insta_gore_post_fecha <- renderHighchart({
     
-    dinst <- dinst_gore()
+    dinst_gore <- dinst_gore()
     
-    if(nrow(dinst) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
+    if(nrow(dinst_gore) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
     
-    dinst |> 
+    dinst_gore |> 
       count(fecha = date, name = "cantidad") |> 
       hchart("line", hcaes(fecha, cantidad), color = PARS$color_chart, name = "Posts por fecha")
   })
   
   output$rrss_insta_gore_hashtags <- renderPlot({
-    dinst <- dinst_gore()
+    dinst_gore <- dinst_gore()
     
-    if(nrow(dinst) == 0) return(plot.new())
+    if(nrow(dinst_gore) == 0) return(plot.new())
     
-    create_dfm(dinst) |>
+    create_dfm(dinst_gore) |>
       get_top_hashtags() |>
       # as.igraph() |> igraph::plot.igraph()
       quanteda.textplots::textplot_network(vertex_color = PARS$palette[1], edge_color = PARS$palette[2])
   })
   
   output$rrss_insta_gore_post_activos <- DT::renderDataTable({
-    dinst <- dinst_gore()
-    
-    dinst |>
+    dinst_gore <- dinst_gore()
+    dinst_gore |>
       filter(!is.na(caption)) |>
       arrange(desc(80*comments + 20*likes)) |> 
       head(100) |>
@@ -692,81 +717,152 @@ server <- function(input, output, session) {
         fecha = str_glue("{date} (hace {hace_dias})"),
         fecha = str_remove(fecha, "\\.")
       ) |> 
-      select(Usuario = user, Contenido = caption, Fecha = fecha, "\u2764" = likes, "&#128488;" = comments) |>
+      select(Usuario = user, Contenido = caption, Fecha = fecha, "\u2764" = likes, "&#128488;" = comments,
+             "&#128488; pos." = comentarios_positivos, "&#128488; neg." = comentarios_negativos) |>
       datatable() |> 
-      formatCurrency(c(4, 5),currency = "", interval = 3, mark = ".", digits  = 0)
+      formatCurrency(c(4, 5),currency = "", interval = 3, mark = ".", digits  = 0) |> 
+      formatPercentage(c(6, 7))
     
   })
   
-  #Facebook
+  output$rrss_insta_gore_sent_posts <- renderHighchart({
+    dinst_gore <- dinst_gore()
+    
+    if(nrow(dinst_gore) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
+    
+    dinst_gore |> 
+      group_by(fecha = date) |> 
+      summarise(across(c(negativo, positivo, neutro), ~ 100 * round(mean(.x, na.rm = TRUE), 4))) |> 
+      pivot_longer(cols = -c(fecha), names_to = "sent") |>
+      filter(!is.na(value)) |>
+      mutate(sent = factor(sent, levels = c("positivo", "neutro", "negativo"))) |> 
+      hchart("line", hcaes(fecha, value, group = sent), color = c(PARS$palette[5], PARS$color_gray,  PARS$palette[1])) |> 
+      hc_tooltip(valueDecimals = 2, table = TRUE, sort = TRUE)
+    
+  })
   
-  # dfacebook <- reactive({
-  #   
-  #   cli::cli_inform("reactive `dfacebook`")
-  #   
-  #   dfacebook1 <- get_tabla_facebook(input$fecha[1], input$fecha[2], comuna = input$comuna)
-  #   
-  #   if(is.null(input$categorias)) {
-  #     dfacebook <- dfacebook1
-  #     return(dfacebook)
-  #   }
-  #   
-  #   dfacebook <- map_df(input$categorias, function(cat = "Saluds"){
-  #     if(is.null(lista_palabras_clave[[cat]])) return(tibble())
-  #     search_keywords(dinst1, cat) |> mutate(categoria = cat)
-  #   })
-  #   
-  #   dfacebook <- dfacebook |> 
-  #     # por si una publicacion esta en 2 o mas categorias
-  #     distinct(caption, .keep_all = TRUE)
-  #   
-  #   dfacebook
-  #   
-  # })
-  # 
-  # output$rrss_facebook_post_fecha <- renderHighchart({
-  #   
-  #   dfacebook <- dfacebook()
-  #   
-  #   if(nrow(dfacebook) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
-  #   
-  #   dfacebook |> 
-  #     count(fecha = date, name = "cantidad") |> 
-  #     hchart("line", hcaes(fecha, cantidad), color = PARS$color_chart, name = "Posts por fecha")
-  # })
-  # 
-  # output$rrss_facebook_hashtags <- renderPlot({
-  #   dfacebook <- dfacebook()
-  #   
-  #   if(nrow(dfacebook) == 0) return(plot.new())
-  #   
-  #   create_dfm(dfacebook) |>
-  #     get_top_hashtags() |>
-  #     # as.igraph() |> igraph::plot.igraph()
-  #     quanteda.textplots::textplot_network(vertex_color = PARS$palette[1], edge_color = PARS$palette[2])
-  # })
-  # 
-  # output$rrss_facebook_post_activos <- DT::renderDataTable({
-  #   dfacebook <- dfacebook()
-  #   
-  #   dfacebook |>
-  #     filter(!is.na(caption)) |>
-  #     arrange(desc(80*comments + 20*likes)) |> 
-  #     head(100) |>
-  #     mutate(
-  #       caption = str_squish(caption),
-  #       caption = str_glue("<a href=\"{url}\" target=\"_blank\">{str_trunc(caption, 40)}</a>"),
-  #       # date = as.Date(date)
-  #       hace_dias = map_chr(date, diffdate2, d2 = Sys.Date()),
-  #       fecha = str_glue("{date} (hace {hace_dias})"),
-  #       fecha = str_remove(fecha, "\\.")
-  #     ) |> 
-  #     select(Usuario = user, Comuna = comuna, Contenido = caption, Fecha = fecha, "\u2764" = likes, "&#128488;" = comments) |>
-  #     datatable() |> 
-  #     formatCurrency(c(5, 6),currency = "", interval = 3, mark = ".", digits  = 0)
-  #   
-  # })
+  output$rrss_insta_gore_sent_comments <- renderHighchart({
+    dinst_gore <- dinst_gore()
+    
+    if(nrow(dinst_gore) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
+    
+    dinst_gore |> 
+      group_by(fecha = date) |> 
+      summarise(across(c(comentarios_negativos, comentarios_neutros, comentarios_positivos), ~ 100 * round(mean(.x, na.rm = TRUE), 4))) |> 
+      pivot_longer(cols = -c(fecha), names_to = "sent") |>
+      filter(!is.na(value)) |> 
+      mutate(
+        sent = str_replace(sent, "_", " "),
+        sent = factor(sent, levels = c("comentarios positivos", "comentarios neutros", "comentarios negativos"))
+      ) |> 
+      hchart("line", hcaes(fecha, value, group = sent), color = c(PARS$palette[5], PARS$color_gray,  PARS$palette[1])) |> 
+      hc_tooltip(valueDecimals = 2, table = TRUE, sort = TRUE)
+    
+  })
+
+  # RRSS Facebook -----------------------------------------------------------
+  dfacebook <- reactive({
+
+    cli::cli_inform("reactive `dfacebook`")
+
+    dfacebook1 <- get_tabla_facebook(input$fecha[1], input$fecha[2], comuna = input$comuna)
+
+    if(is.null(input$categorias)) {
+      dfacebook <- dfacebook1
+      return(dfacebook)
+    }
+
+    dfacebook <- map_df(input$categorias, function(cat = "Saluds"){
+      if(is.null(lista_palabras_clave[[cat]])) return(tibble())
+      search_keywords(dfacebook1, cat) |> mutate(categoria = cat)
+    })
+
+    dfacebook <- dfacebook |>
+      # por si una publicacion esta en 2 o mas categorias
+      distinct(caption, .keep_all = TRUE)
+
+    dfacebook
+
+  })
+
+  output$rrss_facebook_post_fecha <- renderHighchart({
+
+    dfacebook <- dfacebook()
+
+    if(nrow(dfacebook) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
+
+    dfacebook |>
+      count(fecha = date, name = "cantidad") |>
+      hchart("line", hcaes(fecha, cantidad), color = PARS$color_chart, name = "Posts por fecha")
+  })
+
+  output$rrss_facebook_hashtags <- renderPlot({
+    dfacebook <- dfacebook()
+
+    if(nrow(dfacebook) == 0) return(plot.new())
+
+    create_dfm(dfacebook) |>
+      get_top_hashtags() |>
+      # as.igraph() |> igraph::plot.igraph()
+      quanteda.textplots::textplot_network(vertex_color = PARS$palette[1], edge_color = PARS$palette[2])
+  })
+
+  output$rrss_facebook_post_activos <- DT::renderDataTable({
+    dfacebook <- dfacebook()
+
+    dfacebook |>
+      filter(!is.na(caption)) |>
+      arrange(desc(80*comments + 20*likes)) |>
+      head(100) |>
+      mutate(
+        caption = str_squish(caption),
+        caption = str_glue("<a href=\"{url}\" target=\"_blank\">{str_trunc(caption, 40)}</a>"),
+        # date = as.Date(date)
+        hace_dias = map_chr(date, diffdate2, d2 = Sys.Date()),
+        fecha = str_glue("{date} (hace {hace_dias})"),
+        fecha = str_remove(fecha, "\\.")
+      ) |>
+      select(Usuario = user, Comuna = comuna, Contenido = caption, Fecha = fecha, "\u2764" = likes, "&#128488;" = comments) |>
+      datatable() |>
+      formatCurrency(c(5, 6),currency = "", interval = 3, mark = ".", digits  = 0) 
+
+  })
   
+  output$rrss_facebook_sent_posts <- renderHighchart({
+    dfacebook <- dfacebook()
+    
+    if(nrow(dfacebook) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
+    
+    dfacebook |> 
+      group_by(fecha = date) |> 
+      summarise(across(c(negativo, positivo, neutro), ~ 100 * round(mean(.x, na.rm = TRUE), 4))) |> 
+      pivot_longer(cols = -c(fecha), names_to = "sent") |>
+      filter(!is.na(value)) |>
+      mutate(sent = factor(sent, levels = c("positivo", "neutro", "negativo"))) |> 
+      hchart("line", hcaes(fecha, value, group = sent), color = c(PARS$palette[5], PARS$color_gray,  PARS$palette[1])) |> 
+      hc_tooltip(valueDecimals = 2, table = TRUE, sort = TRUE)
+    
+  })
+  
+  output$rrss_facebook_sent_comments <- renderHighchart({
+    dfacebook <- dfacebook()
+    
+    if(nrow(dfacebook) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
+    
+    dfacebook |> 
+      group_by(fecha = date) |> 
+      summarise(across(c(comentarios_negativos, comentarios_neutros, comentarios_positivos), ~ 100 * round(mean(.x, na.rm = TRUE), 4))) |> 
+      pivot_longer(cols = -c(fecha), names_to = "sent") |>
+      filter(!is.na(value)) |> 
+      mutate(
+        sent = str_replace(sent, "_", " "),
+        sent = factor(sent, levels = c("comentarios positivos", "comentarios neutros", "comentarios negativos"))
+      ) |> 
+      hchart("line", hcaes(fecha, value, group = sent), color = c(PARS$palette[5], PARS$color_gray,  PARS$palette[1])) |> 
+      hc_tooltip(valueDecimals = 2, table = TRUE, sort = TRUE)
+    
+    
+  })
   
   # Tendencias --------------------------------------------------------------
   # para tendecias colocaremos de ejemplo las dos conceptos mas frecuentes
