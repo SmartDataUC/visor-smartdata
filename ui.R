@@ -224,6 +224,12 @@ page_navbar(
         layout_column_wrap(
           width = 1,
         )
+      ),
+      tabPanel(
+        title = tags$span(icon("search"), "Búsqueda en RRSS"),
+        layout_column_wrap(
+          width = 1, textInput("rrss_search", "termino a buscar")
+        )
       )
     )
   ),
