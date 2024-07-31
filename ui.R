@@ -190,9 +190,45 @@ page_navbar(
         )
       ),
       tabPanel(
+        title = tags$span(icon("instagram"), "Instragram GORE"),
+        layout_column_wrap(
+          width = 1,
+          layout_column_wrap(
+            width = 1/2,
+            card(
+              card_header(
+                tags$span("Posts por fecha", class = "tt"),
+              ),
+              highchartOutput("rrss_insta_gore_post_fecha") |> withSpinner()
+            ),
+            card(
+              card_header(
+                tags$span("Relaciones por Coocurrencia de Hashtags", class =  "tt")
+              ),
+              plotOutput("rrss_insta_gore_hashtags") |> withSpinner()
+            )
+          )
+        ),
+        layout_column_wrap(
+          width = 1,
+          card(
+            card_header(
+              tags$span("Top 100 Posts Más Activos", class = "tt"),
+            ),
+            DT::dataTableOutput("rrss_insta_gore_post_activos") |> withSpinner()
+          )
+        )
+      ),
+      tabPanel(
         title = tags$span(icon("facebook"), "Facebook"),
         layout_column_wrap(
           width = 1,
+        )
+      ),
+      tabPanel(
+        title = tags$span(icon("search"), "Búsqueda en RRSS"),
+        layout_column_wrap(
+          width = 1, textInput("rrss_search", "termino a buscar")
         )
       )
     )

@@ -218,13 +218,15 @@ str_clean <- function(x = c("Cath{í   B.arriga ", "otroa cosa")){
 # tabla to html text ------------------------------------------------------
 library(htmltools)
 
-tabla_a_html <- function(tabla, color_cat) {
+tabla_a_html <- function(tabla, color_cat, font = "large") {
   filas_html <- list()
   
+  if(is.null(font)) font <- "large"
+  
   for (i in 1:nrow(tabla)) {
-    primera_columna <- tags$b(style = str_glue("font-size: large;color:{color_cat};"), str_to_title(tabla[i, 1]))
+    primera_columna <- tags$b(style = str_glue(paste0("font-size: ", font, ";color:{color_cat};")), str_to_title(tabla[i, 1]))
     segunda_columna <- tags$p(
-      tags$b(style = str_glue("font-size: large;color:{PARS$fg};"), tabla[i, 2]), 
+      tags$b(style = str_glue(paste0("font-size:", "large",";color:{PARS$fg};")), tabla[i, 2]), 
       tags$span(style = "font-size: x-small;", " Noticias")
     )
     fila_html <- tagList(primera_columna, segunda_columna)
@@ -428,16 +430,14 @@ get_resumen <- function(){
   hr <- as.integer(str_sub(Sys.time(), 12, 13))
   
   h2 <- hoy
-  
+  # logica que si son entre las 1 y 4 AM mirar el dia anterior
   if (hr <= 4) {
     h1 <- hoy -1
   } else {
     h1 <- hoy
   }
   
-  # hacer una logica que si son entre las 1 y 4 AM mirar el dia anterior
-  
-  data_noticias <- get_noticias_date_range(h1, h2)
+  data_noticias <- get_noticias_date_range(hoy -1 , hoy)
   
   total_noticias <- nrow(data_noticias)
   
@@ -449,7 +449,7 @@ get_resumen <- function(){
   
   text_foot_presencia <- paste0(total_noticias,  " noticias en total")
   
-  dinst <- get_tabla_instagram(hoy-1, hoy)
+  dinst <- get_tabla_instagram(hoy-2, hoy)
   
   # dcomentario <- drrss |> 
   #   count(caption, sort = TRUE) |> 
@@ -510,6 +510,19 @@ get_resumen <- function(){
     head(3)
   
   
+  dhechos_noticiosos <- tbl(pool, "hechos_noticiosos") |>
+    # ULTIMA SEMANA
+    filter(as_date(date_min) >= as_date("20240620")) |>
+    collect() |>
+    count(title_gpt, sort = TRUE) |>
+    # quitar hasta la primera comma
+    mutate(title_gpt = str_extract(title_gpt, "^[^,]*")) %>%
+    # TOP 5
+    mutate_if(is.character, str_squish) %>%
+    distinct(title_gpt, .keep_all = TRUE) %>%
+    mutate(title_gpt = str_remove_all(title_gpt, "\"|\\'|\\[|\\]|\\{|\\}")) %>%
+    head(5)
+  
   layout_column_wrap(
     width = 1,
     fill = TRUE,
@@ -531,43 +544,54 @@ get_resumen <- function(){
       ),
       card(card_header(class = "primary", style = str_glue("background-color:{PARS$palette[4]};color:white;"),
                        tags$span("El", tags$b("GS fue mencionado hoy"), "en")),
-           data_noticias %>% 
-             filter(gore == 1) %>% 
-             select(media, url) %>% 
-             head(5) %>% 
-             tabla_a_html_link_web()
+           tabla_a_html(
+             data_noticias %>% 
+               filter(gore == 1) %>% 
+               count(media, sort = TRUE) %>% 
+               head(3), PARS$palette[3])
+             # select(media, url) %>% 
+             # head(5) %>% 
+             # tabla_a_html_link_web()
       )
     ), 
     layout_column_wrap(
       style = css(grid_template_columns = "2fr 1fr 1fr"),
       fill = TRUE,
       fillable = TRUE,
+      card(max_height = 250, card_header(class = "primary", tags$span("Hechos ", tags$b("noticiosos más relevantes"))),
+           card_body(
+             tabla_a_html(dhechos_noticiosos, 
+                          PARS$color_chart, "medium")
+           )
+        
+      ),
+      card(max_height = 250, card_header(class = "secondary", tags$span("La", tags$b("presencia del GS en noticias"))),
+           tags$span(
+             tags$b(style = str_glue("font-size: xx-large;color:{PARS$palette[1]};"), 
+                    paste0("Es de un ", presencia_gore, " en las últimas 24 hrs"))
+           ),
+           card_footer(text_foot_presencia)
+      ),
       card(max_height = 250, card_header(class = "primary", tags$span("El ", tags$b("post más comentado"), "es")),
           tags$span(style = str_glue("font-size: medium;color:{PARS$palette[4]};"), dpost_mas_comentado$caption),
           card_footer(
             tags$span(style = "font-size: small;", paste0("Medio: @", dpost_mas_comentado$user), ",  "),
             tags$span(style = "font-size: small;", catg_post_mas_comentado), 
-            tags$span(style = "font-size: small;", paste0(", ", "💬: ", dpost_mas_comentado$comments))
+            tags$span(style = "font-size: small;", paste0(", ", "💬: ", dpost_mas_comentado$comments, ", ")),
+            tags$a(href = dpost_mas_comentado$url, "Ir al post", target = "blank")
           )
-      ),
-      card(max_height = 250, card_header(class = "secondary", tags$span("La", tags$b("presencia del GS en noticias"))),
-           tags$span(
-             tags$b(style = str_glue("font-size: xx-large;color:{PARS$palette[1]};"), 
-                   paste0("Es de un ", presencia_gore, " en las últimas 24 hrs"))
-           ),
-           card_footer(text_foot_presencia)
-      ),
-      card(max_height = 250, card_header(class = "secondary", tags$span("La", tags$b("comuna con menos noticias"))),
-           card_body(style = "text-align: center;",
-             tags$span(
-               tags$b(style = str_glue("font-size: xx-large;color:{PARS$palette[1]};"), 
-                      dcomunas_low$comunas)
-               # tags$br()
-               
-             )
-           ),
-           card_footer(tags$span(style = "font-size: small;", n_comunas_low))
       )
+      # card(max_height = 250, card_header(class = "secondary", tags$span("La", tags$b("comuna con menos noticias"))),
+      #      card_body(style = "text-align: center;",
+      #        tags$span(
+      #          tags$b(style = str_glue("font-size: xx-large;color:{PARS$palette[1]};"), 
+      #                 dcomunas_low$comunas)
+      #          # tags$br()
+      #          
+      #        )
+      #      ),
+      #      card_footer(tags$span(style = "font-size: small;", n_comunas_low))
+      # )
     ),
     layout_column_wrap(
       width = 1,

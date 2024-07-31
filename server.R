@@ -551,6 +551,7 @@ server <- function(input, output, session) {
   # }) |
   #   bindEvent(input$mainnav)
   
+  # Instagram 
   
   dinst <- reactive({
     
@@ -627,6 +628,145 @@ server <- function(input, output, session) {
       formatCurrency(c(5, 6),currency = "", interval = 3, mark = ".", digits  = 0)
 
   })
+  
+  #Instagram Gore
+  
+  dinst_gore <- reactive({
+    
+    cli::cli_inform("reactive `dinst`")
+    
+    dinst1 <- get_tabla_insta_gore(input$fecha[1] - 30, input$fecha[2])
+    
+    if(is.null(input$categorias)) {
+      dinst <- dinst1
+      return(dinst)
+    }
+    
+    dinst <- map_df(input$categorias, function(cat = "Saluds"){
+      if(is.null(lista_palabras_clave[[cat]])) return(tibble())
+      search_keywords(dinst1, cat) |> mutate(categoria = cat)
+    })
+    
+    dinst <- dinst |> 
+      # por si una publicacion esta en 2 o mas categorias
+      distinct(caption, .keep_all = TRUE)
+    
+    dinst
+    
+  })
+  
+  output$rrss_insta_gore_post_fecha <- renderHighchart({
+    
+    dinst <- dinst_gore()
+    
+    if(nrow(dinst) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
+    
+    dinst |> 
+      count(fecha = date, name = "cantidad") |> 
+      hchart("line", hcaes(fecha, cantidad), color = PARS$color_chart, name = "Posts por fecha")
+  })
+  
+  output$rrss_insta_gore_hashtags <- renderPlot({
+    dinst <- dinst_gore()
+    
+    if(nrow(dinst) == 0) return(plot.new())
+    
+    create_dfm(dinst) |>
+      get_top_hashtags() |>
+      # as.igraph() |> igraph::plot.igraph()
+      quanteda.textplots::textplot_network(vertex_color = PARS$palette[1], edge_color = PARS$palette[2])
+  })
+  
+  output$rrss_insta_gore_post_activos <- DT::renderDataTable({
+    dinst <- dinst_gore()
+    
+    dinst |>
+      filter(!is.na(caption)) |>
+      arrange(desc(80*comments + 20*likes)) |> 
+      head(100) |>
+      mutate(
+        caption = str_squish(caption),
+        caption = str_glue("<a href=\"{url}\" target=\"_blank\">{str_trunc(caption, 40)}</a>"),
+        # date = as.Date(date)
+        hace_dias = map_chr(date, diffdate2, d2 = Sys.Date()),
+        fecha = str_glue("{date} (hace {hace_dias})"),
+        fecha = str_remove(fecha, "\\.")
+      ) |> 
+      select(Usuario = user, Contenido = caption, Fecha = fecha, "\u2764" = likes, "&#128488;" = comments) |>
+      datatable() |> 
+      formatCurrency(c(4, 5),currency = "", interval = 3, mark = ".", digits  = 0)
+    
+  })
+  
+  #Facebook
+  
+  # dfacebook <- reactive({
+  #   
+  #   cli::cli_inform("reactive `dfacebook`")
+  #   
+  #   dfacebook1 <- get_tabla_facebook(input$fecha[1], input$fecha[2], comuna = input$comuna)
+  #   
+  #   if(is.null(input$categorias)) {
+  #     dfacebook <- dfacebook1
+  #     return(dfacebook)
+  #   }
+  #   
+  #   dfacebook <- map_df(input$categorias, function(cat = "Saluds"){
+  #     if(is.null(lista_palabras_clave[[cat]])) return(tibble())
+  #     search_keywords(dinst1, cat) |> mutate(categoria = cat)
+  #   })
+  #   
+  #   dfacebook <- dfacebook |> 
+  #     # por si una publicacion esta en 2 o mas categorias
+  #     distinct(caption, .keep_all = TRUE)
+  #   
+  #   dfacebook
+  #   
+  # })
+  # 
+  # output$rrss_facebook_post_fecha <- renderHighchart({
+  #   
+  #   dfacebook <- dfacebook()
+  #   
+  #   if(nrow(dfacebook) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
+  #   
+  #   dfacebook |> 
+  #     count(fecha = date, name = "cantidad") |> 
+  #     hchart("line", hcaes(fecha, cantidad), color = PARS$color_chart, name = "Posts por fecha")
+  # })
+  # 
+  # output$rrss_facebook_hashtags <- renderPlot({
+  #   dfacebook <- dfacebook()
+  #   
+  #   if(nrow(dfacebook) == 0) return(plot.new())
+  #   
+  #   create_dfm(dfacebook) |>
+  #     get_top_hashtags() |>
+  #     # as.igraph() |> igraph::plot.igraph()
+  #     quanteda.textplots::textplot_network(vertex_color = PARS$palette[1], edge_color = PARS$palette[2])
+  # })
+  # 
+  # output$rrss_facebook_post_activos <- DT::renderDataTable({
+  #   dfacebook <- dfacebook()
+  #   
+  #   dfacebook |>
+  #     filter(!is.na(caption)) |>
+  #     arrange(desc(80*comments + 20*likes)) |> 
+  #     head(100) |>
+  #     mutate(
+  #       caption = str_squish(caption),
+  #       caption = str_glue("<a href=\"{url}\" target=\"_blank\">{str_trunc(caption, 40)}</a>"),
+  #       # date = as.Date(date)
+  #       hace_dias = map_chr(date, diffdate2, d2 = Sys.Date()),
+  #       fecha = str_glue("{date} (hace {hace_dias})"),
+  #       fecha = str_remove(fecha, "\\.")
+  #     ) |> 
+  #     select(Usuario = user, Comuna = comuna, Contenido = caption, Fecha = fecha, "\u2764" = likes, "&#128488;" = comments) |>
+  #     datatable() |> 
+  #     formatCurrency(c(5, 6),currency = "", interval = 3, mark = ".", digits  = 0)
+  #   
+  # })
+  
   
   # Tendencias --------------------------------------------------------------
   # para tendecias colocaremos de ejemplo las dos conceptos mas frecuentes
