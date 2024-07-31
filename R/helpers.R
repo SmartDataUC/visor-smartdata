@@ -437,7 +437,7 @@ get_resumen <- function(){
     h1 <- hoy
   }
   
-  data_noticias <- get_noticias_date_range(h1, h2)
+  data_noticias <- get_noticias_date_range(hoy -1 , hoy)
   
   total_noticias <- nrow(data_noticias)
   
@@ -449,7 +449,7 @@ get_resumen <- function(){
   
   text_foot_presencia <- paste0(total_noticias,  " noticias en total")
   
-  dinst <- get_tabla_instagram(hoy-1, hoy)
+  dinst <- get_tabla_instagram(hoy-2, hoy)
   
   # dcomentario <- drrss |> 
   #   count(caption, sort = TRUE) |> 
