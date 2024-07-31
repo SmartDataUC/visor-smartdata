@@ -599,7 +599,7 @@ server <- function(input, output, session) {
   output$rrss_insta_hashtags <- renderPlot({
     dinst <- dinst()
     
-    if(nrow(dinst) == 0) return(highchart() |> hc_subtitle(text = "No existen post con dichos parámetros"))
+    if(nrow(dinst) == 0) return(plot.new())
     
     create_dfm(dinst) |>
       get_top_hashtags() |>
@@ -631,8 +631,8 @@ server <- function(input, output, session) {
   # Tendencias --------------------------------------------------------------
   # para tendecias colocaremos de ejemplo las dos conceptos mas frecuentes
   trend_terms <- reactiveVal(
-    get_noticias_date_range(Sys.Date(), Sys.Date() - 2) |> 
-      get_noticias_ngram(1) |> 
+    get_noticias_date_range(Sys.Date(), Sys.Date() - 7) |> 
+      get_noticias_ngram(2) |> 
       pull(1) |> 
       head(3)
   )
