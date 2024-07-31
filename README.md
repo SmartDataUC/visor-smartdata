@@ -188,7 +188,9 @@ La aplicación distingue entre dos roles de usuario:
 - **Administrador**: Tiene la capacidad de crear nuevos usuarios y
   gestionar los existentes.
 - **Usuario Normal**: Puede acceder y utilizar las funcionalidades de la
-  aplicación sin permisos administrativos.
+  aplicación sin permisos administrativos. Para más detalle sobre
+  opciones, inputs y secciones revisar *manual de usuario* de la
+  aplicación.
 
 ### Navegación y Secciones
 

@@ -110,7 +110,7 @@ Para iniciar la aplicación, los usuarios deben acceder a la URL específica del
 La aplicación distingue entre dos roles de usuario:
 
 - **Administrador**: Tiene la capacidad de crear nuevos usuarios y gestionar los existentes.
-- **Usuario Normal**: Puede acceder y utilizar las funcionalidades de la aplicación sin permisos administrativos.
+- **Usuario Normal**: Puede acceder y utilizar las funcionalidades de la aplicación sin permisos administrativos. Para más detalle sobre opciones, inputs y secciones revisar *manual de usuario* de la aplicación.
 
 ### Navegación y Secciones
 Después de iniciar sesión, la aplicación presenta un menú principal en el lado izquierdo con opciones para seleccionar fecha, categoría y comunas. La aplicación se divide en tres secciones principales:
