@@ -558,7 +558,7 @@ get_resumen <- function(){
       style = css(grid_template_columns = "2fr 1fr 1fr"),
       fill = TRUE,
       fillable = TRUE,
-      card(max_height = 250, card_header(class = "primary", tags$span("Hechos ", tags$b("noticiosos más relevantes", " de la últimas 2 semanas"))),
+      card(max_height = 250, card_header(class = "primary", tags$span("Hechos ", tags$b("noticiosos más relevantes", " de las últimas 2 semanas"))),
            card_body(
              tabla_a_html(dhechos_noticiosos, 
                           PARS$color_chart, "medium")
