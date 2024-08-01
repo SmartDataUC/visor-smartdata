@@ -427,15 +427,6 @@ reporte_comuna <- function(data_noticias, comunaid = "pudahuel", ng = 1){
 get_resumen <- function(){
   
   hoy <- Sys.Date()
-  hr <- as.integer(str_sub(Sys.time(), 12, 13))
-  
-  h2 <- hoy
-  # logica que si son entre las 1 y 4 AM mirar el dia anterior
-  if (hr <= 4) {
-    h1 <- hoy -1
-  } else {
-    h1 <- hoy
-  }
   
   data_noticias <- get_noticias_date_range(hoy -1 , hoy)
   
@@ -449,7 +440,7 @@ get_resumen <- function(){
   
   text_foot_presencia <- paste0(total_noticias,  " noticias en total")
   
-  dinst <- get_tabla_instagram(hoy-2, hoy)
+  dinst <- get_tabla_instagram(hoy-7, hoy)
   
   # dcomentario <- drrss |> 
   #   count(caption, sort = TRUE) |> 
@@ -572,7 +563,7 @@ get_resumen <- function(){
            ),
            card_footer(text_foot_presencia)
       ),
-      card(max_height = 250, card_header(class = "primary", tags$span("El ", tags$b("post más comentado"), "es")),
+      card(max_height = 250, card_header(class = "primary", tags$span("El ", tags$b("post más comentado de la última semana"), "es")),
           tags$span(style = str_glue("font-size: medium;color:{PARS$palette[4]};"), dpost_mas_comentado$caption),
           card_footer(
             tags$span(style = "font-size: small;", paste0("Medio: @", dpost_mas_comentado$user), ",  "),
