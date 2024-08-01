@@ -471,7 +471,10 @@ server <- function(input, output, session) {
         fecha = str_remove(fecha, "\\.")
       ) |> 
       select(Titular = title, Comunas = comunas, `Categoría` = categoria, Fecha = fecha) |>
-      datatable()
+      datatable() |>
+      formatStyle(
+        columns = c(2), width='300px'
+      )
     
   })
 

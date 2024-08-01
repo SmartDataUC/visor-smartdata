@@ -407,7 +407,7 @@ reporte_comuna <- function(data_noticias, comunaid = "pudahuel", ng = 1){
 
   doutdt <- dout |>
     select(Título = title, Fecha = date, Medio = media, Categoría = categoria) |>
-    datatable()
+    datatable() 
   
   modalDialog(
     tags$h4(str_glue("Análisis de noticias comunales: {str_to_title(comuna)}")),
