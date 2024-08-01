@@ -1,3 +1,6 @@
+# que no existan problemas dado el TZ del servidor.
+Sys.setenv(TZ = "America/Santiago")
+
 # packages ----------------------------------------------------------------
 cli::cli_h1("packages")
 suppressWarnings(library(tidyverse))
