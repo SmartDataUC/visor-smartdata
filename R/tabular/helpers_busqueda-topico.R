@@ -14,8 +14,9 @@ categorias <- excel_sheets(ruta_archivo)
 search_keywords <- function(data, category, ignore_case = TRUE) {
   
   pattern <- lista_palabras_clave[[category]] |> 
-    pull() |> 
-    paste0("\\b", . = _, "\\b", collapse = "|")
+    pull()
+  
+  pattern <- paste0("\\b", . = pattern, "\\b", collapse = "|")
   
   search_result <- data |> 
     filter(str_detect(caption, regex(pattern, ignore_case = ignore_case))) |> 
